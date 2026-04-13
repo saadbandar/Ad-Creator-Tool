@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useId, useEffect } from "react";
 import html2canvas from "html2canvas";
 import defaultBg from "@assets/social_media-03_1776117368027.png";
+import patternImg from "@assets/pattern_1776117955422.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, RefreshCw, ImageIcon, Eye } from "lucide-react";
@@ -178,7 +179,7 @@ export default function AdGenerator() {
                 width: CANVAS_SIZE,
                 height: CANVAS_SIZE,
               }}>
-                <AdCanvas adRef={adRef} bgImage={bgImage} title={title} items={items} />
+                <AdCanvas adRef={adRef} bgImage={bgImage} title={title} items={items} pattern={patternImg} />
               </div>
             </div>
           </div>
@@ -197,11 +198,12 @@ export default function AdGenerator() {
 /* ─────────────────────────────────────────────
    The actual ad canvas – always 1080×1080 px
 ───────────────────────────────────────────── */
-function AdCanvas({ adRef, bgImage, title, items }: {
+function AdCanvas({ adRef, bgImage, title, items, pattern }: {
   adRef: React.RefObject<HTMLDivElement>;
   bgImage: string;
   title: string;
   items: ContentItem[];
+  pattern: string;
 }) {
   /* top section height in px */
   const TOP_H = 580;
@@ -297,22 +299,22 @@ function AdCanvas({ adRef, bgImage, title, items }: {
         zIndex: 5,
         overflow: "hidden",
       }}>
-        {/* Subtle watermark pattern */}
-        <div style={{ position: "absolute", inset: 0, opacity: 0.04 }}>
-          {[...Array(9)].map((_, idx) => {
-            const row = Math.floor(idx / 3);
-            const col = idx % 3;
-            return (
-              <div key={idx} style={{
-                position: "absolute",
-                top: row * 155 - 10,
-                right: col * 360 - 20,
-              }}>
-                <PsauLogo size={120} color="#1e3d2f" />
-              </div>
-            );
-          })}
-        </div>
+        {/* Official university geometric pattern as watermark */}
+        <img
+          src={pattern}
+          alt=""
+          crossOrigin="anonymous"
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            objectPosition: "center",
+            opacity: 0.10,
+            pointerEvents: "none",
+          }}
+        />
 
         {/* 2×2 Content grid */}
         <div style={{
