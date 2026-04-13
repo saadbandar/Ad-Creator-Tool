@@ -1,368 +1,191 @@
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useId, useEffect } from "react";
 import html2canvas from "html2canvas";
+import defaultBg from "@assets/social_media-03_1776117368027.png";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Download, Eye, RefreshCw } from "lucide-react";
+import { Download, RefreshCw, ImageIcon, Eye } from "lucide-react";
 
-type AdSize = {
-  label: string;
-  width: number;
-  height: number;
-  ratio: string;
-};
+/* ── The "real" canvas is always 1080×1080px, scaled down in the preview ── */
+const CANVAS_SIZE = 1080;
 
-const AD_SIZES: Record<string, AdSize> = {
-  square: { label: "مربع (1:1)", width: 1080, height: 1080, ratio: "1 / 1" },
-  landscape: { label: "أفقي (16:9)", width: 1920, height: 1080, ratio: "16 / 9" },
-  portrait: { label: "عمودي (4:5)", width: 1080, height: 1350, ratio: "4 / 5" },
-  story: { label: "ستوري (9:16)", width: 1080, height: 1920, ratio: "9 / 16" },
-  banner: { label: "بانر (3:1)", width: 1200, height: 400, ratio: "3 / 1" },
-};
+type ContentItem = { title: string; desc: string };
 
-type AdTemplate = "teal-light" | "teal-dark" | "white-teal" | "gradient";
-
-const TEMPLATES: Record<AdTemplate, { label: string; bg: string; text: string; accent: string; desc: string }> = {
-  "teal-light": {
-    label: "فاتح",
-    bg: "linear-gradient(135deg, #f1f9f7 0%, #bbe3e7 100%)",
-    text: "#1a3d3b",
-    accent: "#3c7974",
-    desc: "خلفية فاتحة مع ألوان الجامعة",
-  },
-  "teal-dark": {
-    label: "داكن",
-    bg: "linear-gradient(135deg, #1a3d3b 0%, #3c7974 100%)",
-    text: "#f1f9f7",
-    accent: "#6ac7bd",
-    desc: "خلفية داكنة بألوان الجامعة",
-  },
-  "white-teal": {
-    label: "أبيض وأخضر",
-    bg: "#ffffff",
-    text: "#1a3d3b",
-    accent: "#6ac7bd",
-    desc: "خلفية بيضاء مع إطار ملون",
-  },
-  gradient: {
-    label: "متدرج",
-    bg: "linear-gradient(160deg, #6ac7bd 0%, #3c7974 50%, #1a3d3b 100%)",
-    text: "#f1f9f7",
-    accent: "#bbe3e7",
-    desc: "تدرج أخضر مائي",
-  },
-};
+const DEFAULT_ITEMS: ContentItem[] = [
+  { title: "محتوى نصي", desc: "وصف قصير مختصر ليتم إستبداله لاحقًا..." },
+  { title: "محتوى نصي", desc: "وصف قصير مختصر ليتم إستبداله لاحقًا..." },
+  { title: "محتوى نصي", desc: "وصف قصير مختصر ليتم إستبداله لاحقًا..." },
+  { title: "محتوى نصي", desc: "وصف قصير مختصر ليتم إستبداله لاحقًا..." },
+];
 
 export default function AdGenerator() {
-  const [title, setTitle] = useState("عنوان الإعلان الرئيسي");
-  const [subtitle, setSubtitle] = useState("النص التوضيحي للإعلان");
-  const [body, setBody] = useState("تفاصيل الإعلان وأي معلومات إضافية تريد إضافتها هنا. يمكنك كتابة نص طويل أو قصير حسب الحاجة.");
-  const [footer, setFooter] = useState("جامعة الأمير سطام بن عبدالعزيز");
-  const [selectedSize, setSelectedSize] = useState<string>("square");
-  const [selectedTemplate, setSelectedTemplate] = useState<AdTemplate>("teal-light");
+  const [title, setTitle] = useState("العنوان");
+  const [items, setItems] = useState<ContentItem[]>(DEFAULT_ITEMS.map(i => ({ ...i })));
+  const [bgImage, setBgImage] = useState<string>(defaultBg);
   const [isExporting, setIsExporting] = useState(false);
-  const adRef = useRef<HTMLDivElement>(null);
 
-  const template = TEMPLATES[selectedTemplate];
-  const size = AD_SIZES[selectedSize];
+  /* Scale factor: container width / CANVAS_SIZE */
+  const [scale, setScale] = useState(0.5);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const adRef = useRef<HTMLDivElement>(null);
+  const fileInputId = useId();
+
+  /* Observe the preview wrapper and update scale */
+  useEffect(() => {
+    const el = wrapperRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const w = entry.contentRect.width;
+      setScale(w / CANVAS_SIZE);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
+  const updateItem = (i: number, field: keyof ContentItem, v: string) =>
+    setItems(prev => { const n = [...prev]; n[i] = { ...n[i], [field]: v }; return n; });
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => ev.target?.result && setBgImage(ev.target.result as string);
+    reader.readAsDataURL(file);
+  };
 
   const exportAsImage = useCallback(async () => {
     if (!adRef.current) return;
     setIsExporting(true);
     try {
       const canvas = await html2canvas(adRef.current, {
-        scale: 2,
+        scale: 1,
         useCORS: true,
         allowTaint: true,
-        backgroundColor: null,
-        width: adRef.current.offsetWidth,
-        height: adRef.current.offsetHeight,
+        backgroundColor: "#ffffff",
         logging: false,
+        width: CANVAS_SIZE,
+        height: CANVAS_SIZE,
+        imageTimeout: 15000,
       });
       const link = document.createElement("a");
-      link.download = `إعلان-جامعة-سطام-${selectedSize}.png`;
+      link.download = "إعلان-جامعة-سطام.png";
       link.href = canvas.toDataURL("image/png");
       link.click();
-    } catch (err) {
-      console.error("Export error:", err);
     } finally {
       setIsExporting(false);
     }
-  }, [selectedSize]);
+  }, []);
 
-  const resetFields = () => {
-    setTitle("عنوان الإعلان الرئيسي");
-    setSubtitle("النص التوضيحي للإعلان");
-    setBody("تفاصيل الإعلان وأي معلومات إضافية تريد إضافتها هنا. يمكنك كتابة نص طويل أو قصير حسب الحاجة.");
-    setFooter("جامعة الأمير سطام بن عبدالعزيز");
+  const resetAll = () => {
+    setBgImage(defaultBg);
+    setTitle("العنوان");
+    setItems(DEFAULT_ITEMS.map(i => ({ ...i })));
   };
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Header */}
-      <header className="bg-primary text-primary-foreground shadow-md">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-4">
-          <div className="flex items-center gap-3">
-            <UniversityLogo color="#ffffff" size={48} />
-            <div>
-              <h1 className="text-lg font-bold leading-tight">مولّد الإعلانات</h1>
-              <p className="text-xs opacity-80">جامعة الأمير سطام بن عبدالعزيز</p>
-            </div>
+      {/* App header */}
+      <header className="bg-[#1e3d2f] text-white shadow-lg">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
+          <PsauLogo size={44} color="#6ac7bd" />
+          <div>
+            <h1 className="text-base font-bold leading-tight">مولّد الإعلانات</h1>
+            <p className="text-xs opacity-70">جامعة الأمير سطام بن عبدالعزيز</p>
           </div>
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Controls Panel */}
-        <div className="space-y-5">
-          <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
-            <h2 className="text-base font-bold text-foreground mb-4 pb-2 border-b border-border">محتوى الإعلان</h2>
-
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="title" className="text-sm font-semibold mb-1.5 block">العنوان الرئيسي</Label>
-                <Input
-                  id="title"
-                  data-testid="input-title"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="اكتب العنوان هنا..."
-                  className="text-right"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="subtitle" className="text-sm font-semibold mb-1.5 block">العنوان الفرعي</Label>
-                <Input
-                  id="subtitle"
-                  data-testid="input-subtitle"
-                  value={subtitle}
-                  onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="اكتب العنوان الفرعي..."
-                  className="text-right"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="body" className="text-sm font-semibold mb-1.5 block">نص الإعلان</Label>
-                <Textarea
-                  id="body"
-                  data-testid="textarea-body"
-                  value={body}
-                  onChange={(e) => setBody(e.target.value)}
-                  placeholder="اكتب نص الإعلان التفصيلي هنا..."
-                  rows={4}
-                  className="text-right resize-none"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="footer" className="text-sm font-semibold mb-1.5 block">نص التذييل</Label>
-                <Input
-                  id="footer"
-                  data-testid="input-footer"
-                  value={footer}
-                  onChange={(e) => setFooter(e.target.value)}
-                  placeholder="مثال: جامعة الأمير سطام بن عبدالعزيز"
-                  className="text-right"
-                />
-              </div>
-            </div>
+      <div className="max-w-7xl mx-auto px-4 py-6 grid grid-cols-1 lg:grid-cols-[360px_1fr] gap-6 items-start">
+        {/* ── Controls ── */}
+        <div className="space-y-4">
+          {/* Background image upload */}
+          <div className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
+            <h2 className="text-sm font-bold mb-3 pb-2 border-b border-border">صورة الخلفية</h2>
+            <label
+              htmlFor={fileInputId}
+              data-testid="label-upload"
+              className="flex flex-col items-center gap-2 border-2 border-dashed border-primary/40 rounded-lg p-4 cursor-pointer hover:border-primary/70 hover:bg-primary/5 transition-all"
+            >
+              <ImageIcon className="h-6 w-6 text-primary/60" />
+              <span className="text-xs text-muted-foreground text-center">
+                اضغط لرفع صورة خلفية<br />
+                <span className="text-primary font-medium">JPG, PNG, WEBP</span>
+              </span>
+              <input id={fileInputId} data-testid="input-image" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+            </label>
+            {bgImage !== defaultBg && (
+              <button onClick={() => setBgImage(defaultBg)} className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
+                ← استخدام الصورة الافتراضية
+              </button>
+            )}
           </div>
 
-          {/* Settings */}
-          <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
-            <h2 className="text-base font-bold text-foreground mb-4 pb-2 border-b border-border">إعدادات الإعلان</h2>
+          {/* Title */}
+          <div className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
+            <h2 className="text-sm font-bold mb-3 pb-2 border-b border-border">العنوان الرئيسي</h2>
+            <Input data-testid="input-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="اكتب العنوان..." className="text-right text-base font-bold" />
+          </div>
 
+          {/* Content items */}
+          <div className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
+            <h2 className="text-sm font-bold mb-3 pb-2 border-b border-border">العناصر الأربعة</h2>
             <div className="space-y-4">
-              <div>
-                <Label className="text-sm font-semibold mb-1.5 block">حجم الإعلان</Label>
-                <Select value={selectedSize} onValueChange={setSelectedSize}>
-                  <SelectTrigger data-testid="select-size" className="text-right">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(AD_SIZES).map(([key, val]) => (
-                      <SelectItem key={key} value={key}>{val.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground mt-1">{size.width} × {size.height} بكسل</p>
-              </div>
-
-              <div>
-                <Label className="text-sm font-semibold mb-1.5 block">القالب</Label>
-                <div className="grid grid-cols-2 gap-2">
-                  {(Object.entries(TEMPLATES) as [AdTemplate, typeof TEMPLATES[AdTemplate]][]).map(([key, tmpl]) => (
-                    <button
-                      key={key}
-                      data-testid={`template-${key}`}
-                      onClick={() => setSelectedTemplate(key)}
-                      className={`p-3 rounded-lg border-2 text-right transition-all ${
-                        selectedTemplate === key
-                          ? "border-primary shadow-sm"
-                          : "border-border hover:border-primary/40"
-                      }`}
-                    >
-                      <div
-                        className="w-full h-8 rounded mb-2"
-                        style={{ background: tmpl.bg, border: "1px solid rgba(0,0,0,0.08)" }}
-                      />
-                      <p className="text-xs font-semibold">{tmpl.label}</p>
-                      <p className="text-xs text-muted-foreground">{tmpl.desc}</p>
-                    </button>
-                  ))}
+              {items.map((item, i) => (
+                <div key={i} className="space-y-1.5">
+                  <p className="text-xs text-muted-foreground font-medium">العنصر {i + 1}</p>
+                  <Input data-testid={`input-item-title-${i}`} value={item.title} onChange={e => updateItem(i, "title", e.target.value)} placeholder="العنوان..." className="text-right text-sm" />
+                  <Input data-testid={`input-item-desc-${i}`} value={item.desc} onChange={e => updateItem(i, "desc", e.target.value)} placeholder="الوصف..." className="text-right text-sm" />
                 </div>
-              </div>
+              ))}
             </div>
           </div>
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button
-              data-testid="button-export"
-              onClick={exportAsImage}
-              disabled={isExporting}
-              className="flex-1 gap-2"
-            >
-              {isExporting ? (
-                <RefreshCw className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
+            <Button data-testid="button-export" onClick={exportAsImage} disabled={isExporting} className="flex-1 gap-2 bg-[#1e3d2f] hover:bg-[#2a5240] text-white">
+              {isExporting ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
               {isExporting ? "جاري التصدير..." : "تحميل الصورة"}
             </Button>
-            <Button
-              data-testid="button-reset"
-              variant="outline"
-              onClick={resetFields}
-              className="gap-2"
-            >
+            <Button data-testid="button-reset" variant="outline" onClick={resetAll} className="gap-2">
               <RefreshCw className="h-4 w-4" />
               إعادة تعيين
             </Button>
           </div>
         </div>
 
-        {/* Preview Panel */}
+        {/* ── Preview ── */}
         <div className="space-y-3">
-          <div className="bg-card border border-card-border rounded-xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
-              <h2 className="text-base font-bold text-foreground">معاينة الإعلان</h2>
+          <div className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
+              <h2 className="text-sm font-bold">معاينة الإعلان</h2>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Eye className="h-3.5 w-3.5" />
-                معاينة مباشرة
+                1080 × 1080 بكسل
               </div>
             </div>
 
-            {/* Ad Preview Container */}
-            <div className="flex items-center justify-center bg-muted/40 rounded-lg p-4 min-h-[300px]">
-              <div
-                className="w-full overflow-hidden"
-                style={{ aspectRatio: size.ratio, maxHeight: "500px" }}
-              >
-                <div
-                  ref={adRef}
-                  className="w-full h-full relative flex flex-col"
-                  style={{
-                    background: template.bg,
-                    fontFamily: "'Cairo', 'Neo Sans Arabic', sans-serif",
-                    direction: "rtl",
-                  }}
-                >
-                  {/* Decorative top bar */}
-                  <div
-                    className="absolute top-0 left-0 right-0 h-1.5"
-                    style={{ background: template.accent }}
-                  />
-
-                  {/* Logo area */}
-                  <div className="flex items-center gap-3 p-5 pt-6">
-                    <UniversityLogo color={template.accent} size={40} />
-                    <div>
-                      <p className="text-xs font-bold" style={{ color: template.accent }}>
-                        PRINCE SATTAM BIN ABDULAZIZ UNIVERSITY
-                      </p>
-                      <p className="text-xs" style={{ color: template.text, opacity: 0.8 }}>
-                        جامعة الأمير سطام بن عبدالعزيز
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Divider line */}
-                  <div className="mx-5 h-px opacity-20" style={{ background: template.text }} />
-
-                  {/* Content */}
-                  <div className="flex-1 flex flex-col justify-center p-5 gap-3">
-                    {title && (
-                      <h2
-                        className="font-black leading-tight"
-                        style={{
-                          color: template.text,
-                          fontSize: "clamp(16px, 4vw, 32px)",
-                          lineHeight: 1.3,
-                        }}
-                      >
-                        {title}
-                      </h2>
-                    )}
-                    {subtitle && (
-                      <p
-                        className="font-semibold"
-                        style={{
-                          color: template.accent,
-                          fontSize: "clamp(12px, 2.5vw, 20px)",
-                        }}
-                      >
-                        {subtitle}
-                      </p>
-                    )}
-                    {body && (
-                      <p
-                        className="leading-relaxed opacity-85"
-                        style={{
-                          color: template.text,
-                          fontSize: "clamp(10px, 1.8vw, 15px)",
-                        }}
-                      >
-                        {body}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Footer */}
-                  <div
-                    className="px-5 py-3 flex items-center justify-between"
-                    style={{ borderTop: `1px solid ${template.accent}30` }}
-                  >
-                    <p
-                      className="text-xs font-semibold"
-                      style={{ color: template.text, opacity: 0.7 }}
-                    >
-                      {footer}
-                    </p>
-                    <div
-                      className="w-16 h-1 rounded-full"
-                      style={{ background: template.accent, opacity: 0.6 }}
-                    />
-                  </div>
-
-                  {/* Decorative bottom bar */}
-                  <div
-                    className="absolute bottom-0 left-0 right-0 h-1"
-                    style={{ background: template.accent, opacity: 0.4 }}
-                  />
-                </div>
+            {/* Scaled preview wrapper */}
+            <div
+              ref={wrapperRef}
+              className="w-full bg-muted/30 rounded-lg"
+              style={{ aspectRatio: "1/1", position: "relative", overflow: "hidden" }}
+            >
+              <div style={{
+                position: "absolute",
+                top: 0,
+                left: 0,
+                transform: `scale(${scale})`,
+                transformOrigin: "top left",
+                width: CANVAS_SIZE,
+                height: CANVAS_SIZE,
+              }}>
+                <AdCanvas adRef={adRef} bgImage={bgImage} title={title} items={items} />
               </div>
             </div>
           </div>
 
-          {/* Info */}
-          <div className="bg-accent/30 border border-accent-border rounded-lg px-4 py-3">
-            <p className="text-xs text-foreground/70 leading-relaxed">
-              <strong>ملاحظة:</strong> الصورة ستُحمّل بجودة عالية ({size.width}×{size.height} بكسل) عند الضغط على زر "تحميل الصورة".
+          <div className="bg-accent/20 border border-accent-border rounded-lg px-4 py-2.5">
+            <p className="text-xs text-foreground/70">
+              <strong>ملاحظة:</strong> ستُحمَّل الصورة بدقة 1080×1080 بكسل (مربع مناسب لوسائل التواصل الاجتماعي).
             </p>
           </div>
         </div>
@@ -371,35 +194,195 @@ export default function AdGenerator() {
   );
 }
 
-function UniversityLogo({ color, size }: { color: string; size: number }) {
+/* ─────────────────────────────────────────────
+   The actual ad canvas – always 1080×1080 px
+───────────────────────────────────────────── */
+function AdCanvas({ adRef, bgImage, title, items }: {
+  adRef: React.RefObject<HTMLDivElement>;
+  bgImage: string;
+  title: string;
+  items: ContentItem[];
+}) {
+  /* top section height in px */
+  const TOP_H = 580;
+  const CURVE_OVERLAP = 70; /* how far the curve dips down */
+
   return (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 100 100"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      aria-label="شعار جامعة الأمير سطام"
+    <div
+      ref={adRef}
+      style={{
+        width: CANVAS_SIZE,
+        height: CANVAS_SIZE,
+        position: "relative",
+        overflow: "hidden",
+        backgroundColor: "#ffffff",
+        fontFamily: "'Cairo', Arial, sans-serif",
+        direction: "rtl",
+      }}
     >
-      {/* Stylized university emblem inspired by PSAU identity */}
-      <circle cx="50" cy="50" r="48" fill={color} fillOpacity="0.12" />
-      <circle cx="50" cy="50" r="42" stroke={color} strokeWidth="2" fill="none" />
-      {/* Book shape */}
-      <rect x="28" y="38" width="44" height="30" rx="3" fill={color} fillOpacity="0.15" stroke={color} strokeWidth="1.5" />
-      <line x1="50" y1="38" x2="50" y2="68" stroke={color} strokeWidth="1.5" />
-      {/* Pages lines */}
-      <line x1="33" y1="46" x2="46" y2="46" stroke={color} strokeWidth="1" opacity="0.7" />
-      <line x1="33" y1="51" x2="46" y2="51" stroke={color} strokeWidth="1" opacity="0.7" />
-      <line x1="33" y1="56" x2="46" y2="56" stroke={color} strokeWidth="1" opacity="0.7" />
-      <line x1="54" y1="46" x2="67" y2="46" stroke={color} strokeWidth="1" opacity="0.7" />
-      <line x1="54" y1="51" x2="67" y2="51" stroke={color} strokeWidth="1" opacity="0.7" />
-      <line x1="54" y1="56" x2="67" y2="56" stroke={color} strokeWidth="1" opacity="0.7" />
-      {/* Torch top */}
-      <path d="M50 20 L44 34 L56 34 Z" fill={color} fillOpacity="0.8" />
-      <circle cx="50" cy="18" r="4" fill={color} />
-      {/* Stars */}
-      <circle cx="28" cy="28" r="2" fill={color} fillOpacity="0.6" />
-      <circle cx="72" cy="28" r="2" fill={color} fillOpacity="0.6" />
+      {/* ── TOP SECTION: background image + green overlay ── */}
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: TOP_H }}>
+        {/* background image */}
+        <img
+          src={bgImage}
+          alt=""
+          crossOrigin="anonymous"
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+        />
+        {/* dark green overlay – gradient to match original */}
+        <div style={{
+          position: "absolute", inset: 0,
+          background: "linear-gradient(180deg, rgba(15,38,25,0.68) 0%, rgba(20,50,32,0.80) 55%, rgba(15,38,25,0.93) 100%)",
+        }} />
+
+        {/* ── University Logo — top-right ── */}
+        <div style={{
+          position: "absolute", top: 28, right: 30,
+          display: "flex", alignItems: "flex-start", gap: 14, direction: "rtl",
+        }}>
+          {/* Logo icon */}
+          <PsauLogo size={72} color="#6ac7bd" />
+          {/* Logo text (to the left of the icon in RTL) */}
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", gap: 1, direction: "rtl" }}>
+            <span style={{ color: "#ffffff", fontSize: 18, fontWeight: 700, lineHeight: 1.25, textAlign: "right" }}>جامعة الأميـر</span>
+            <span style={{ color: "#ffffff", fontSize: 30, fontWeight: 900, lineHeight: 1.1, textAlign: "right" }}>سطام</span>
+            <span style={{ color: "#ffffff", fontSize: 18, fontWeight: 700, lineHeight: 1.25, textAlign: "right" }}>بن عبدالعزيز</span>
+            <span style={{ color: "#ffffff", fontSize: 11, fontWeight: 400, lineHeight: 1.3, opacity: 0.85, letterSpacing: "0.06em", textAlign: "right", marginTop: 4 }}>
+              PRINCE SATTAM BIN ABDULAZIZ UNIVERSITY
+            </span>
+          </div>
+        </div>
+
+        {/* ── Main title — lower area of image ── */}
+        <div style={{
+          position: "absolute", bottom: CURVE_OVERLAP + 20, right: 0, left: 0,
+          padding: "0 52px",
+          display: "flex", alignItems: "flex-end",
+        }}>
+          <h1 style={{
+            color: "#ffffff",
+            fontSize: 110,
+            fontWeight: 900,
+            lineHeight: 1.05,
+            textAlign: "right",
+            textShadow: "0 3px 20px rgba(0,0,0,0.35)",
+            letterSpacing: "-0.01em",
+            margin: 0,
+            width: "100%",
+          }}>
+            {title}
+          </h1>
+        </div>
+      </div>
+
+      {/* ── CURVED TRANSITION ── */}
+      <div style={{
+        position: "absolute",
+        top: TOP_H - CURVE_OVERLAP,
+        left: 0, right: 0,
+        height: CURVE_OVERLAP + 60,
+        zIndex: 10,
+      }}>
+        <svg viewBox="0 0 1080 130" preserveAspectRatio="none" width="1080" height="130" xmlns="http://www.w3.org/2000/svg">
+          <path d="M0,130 L0,70 Q540,-30 1080,70 L1080,130 Z" fill="#ffffff" />
+        </svg>
+      </div>
+
+      {/* ── BOTTOM SECTION: white + watermark + 2×2 grid ── */}
+      <div style={{
+        position: "absolute",
+        top: TOP_H + 20,
+        left: 0, right: 0, bottom: 0,
+        backgroundColor: "#ffffff",
+        zIndex: 5,
+        overflow: "hidden",
+      }}>
+        {/* Subtle watermark pattern */}
+        <div style={{ position: "absolute", inset: 0, opacity: 0.04 }}>
+          {[...Array(9)].map((_, idx) => {
+            const row = Math.floor(idx / 3);
+            const col = idx % 3;
+            return (
+              <div key={idx} style={{
+                position: "absolute",
+                top: row * 155 - 10,
+                right: col * 360 - 20,
+              }}>
+                <PsauLogo size={120} color="#1e3d2f" />
+              </div>
+            );
+          })}
+        </div>
+
+        {/* 2×2 Content grid */}
+        <div style={{
+          position: "relative", zIndex: 2,
+          display: "grid", gridTemplateColumns: "1fr 1fr",
+          gap: "28px 40px",
+          padding: "30px 60px 30px 60px",
+          height: "100%",
+          alignContent: "center",
+          direction: "rtl",
+        }}>
+          {items.map((item, i) => (
+            <div key={i} style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {/* Title row: diamond + bold text */}
+              <div style={{ display: "flex", alignItems: "center", gap: 10, direction: "rtl" }}>
+                <span style={{ color: "#3c7974", fontSize: 22, lineHeight: 1, flexShrink: 0 }}>✦</span>
+                <span style={{
+                  color: "#1e3d2f",
+                  fontSize: 28,
+                  fontWeight: 800,
+                  lineHeight: 1.2,
+                  textAlign: "right",
+                }}>
+                  {item.title}
+                </span>
+              </div>
+              {/* Description */}
+              <p style={{
+                color: "#6b7280",
+                fontSize: 21,
+                lineHeight: 1.5,
+                textAlign: "right",
+                margin: 0,
+                paddingRight: 32,
+              }}>
+                {item.desc}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── PSAU Arch/Gate Logo ── */
+function PsauLogo({ size, color }: { size: number; color: string }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 120 130" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+      {/* Outer frame circle */}
+      <circle cx="60" cy="62" r="56" stroke={color} strokeWidth="2.5" fill="none" />
+      {/* Outer arch */}
+      <path d="M18,110 L18,62 Q18,18 60,16 Q102,18 102,62 L102,110" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" />
+      {/* Middle arch */}
+      <path d="M33,110 L33,66 Q33,34 60,32 Q87,34 87,66 L87,110" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
+      {/* Inner door arch */}
+      <path d="M47,110 L47,75 Q47,58 60,57 Q73,58 73,75 L73,110" stroke={color} strokeWidth="2.5" fill={color} fillOpacity="0.18" strokeLinecap="round" />
+      {/* Top crescent ornament */}
+      <path d="M53,16 Q60,7 67,16" stroke={color} strokeWidth="2.5" fill="none" strokeLinecap="round" />
+      <circle cx="60" cy="5" r="4.5" fill={color} />
+      {/* Side columns */}
+      <rect x="13" y="108" width="12" height="6" rx="2" fill={color} />
+      <rect x="95" y="108" width="12" height="6" rx="2" fill={color} />
+      {/* Base line */}
+      <rect x="10" y="113" width="100" height="5" rx="2" fill={color} />
+      {/* Decorative horizontal lines on arches */}
+      <line x1="33" y1="80" x2="47" y2="80" stroke={color} strokeWidth="1.5" opacity="0.6" />
+      <line x1="73" y1="80" x2="87" y2="80" stroke={color} strokeWidth="1.5" opacity="0.6" />
+      <line x1="33" y1="92" x2="47" y2="92" stroke={color} strokeWidth="1.5" opacity="0.6" />
+      <line x1="73" y1="92" x2="87" y2="92" stroke={color} strokeWidth="1.5" opacity="0.6" />
     </svg>
   );
 }
