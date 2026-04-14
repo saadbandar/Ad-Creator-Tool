@@ -36,9 +36,30 @@ const PRESET_ICONS: Record<string, string> = {
   "zoom": "🎥",
 };
 
+type ExportFormat = "webp" | "png" | "jpeg";
+
+interface FormatOption {
+  id: ExportFormat;
+  label: string;
+  mime: string;
+  ext: string;
+  quality: number;
+  hint: string;
+}
+
+const FORMAT_OPTIONS: FormatOption[] = [
+  { id: "webp", mime: "image/webp", ext: "webp", label: "WebP", quality: 0.95,
+    hint: "أفضل جودة وأصغر حجم — موصى به" },
+  { id: "png",  mime: "image/png",  ext: "png",  label: "PNG",  quality: 1,
+    hint: "جودة لا تُفقد — حجم أكبر" },
+  { id: "jpeg", mime: "image/jpeg", ext: "jpg",  label: "JPEG", quality: 0.92,
+    hint: "أصغر حجم — مناسب للمشاركة السريعة" },
+];
+
 export default function AdGenerator() {
   const [data, setData] = useState<EventAdData>({ ...DEFAULT_DATA });
   const [selectedPreset, setSelectedPreset] = useState<number>(1);
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("webp");
   const [isExporting, setIsExporting] = useState(false);
 
   const [scale, setScale] = useState(0.35);
@@ -93,6 +114,7 @@ export default function AdGenerator() {
     const el = exportRef.current;
     if (!el) return;
     setIsExporting(true);
+    const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
     try {
       el.style.visibility = "visible";
       await new Promise(r => setTimeout(r, 200));
@@ -105,8 +127,8 @@ export default function AdGenerator() {
       });
       el.style.visibility = "hidden";
       const link = document.createElement("a");
-      link.download = "إعلان-فعالية-جامعة-سطام.png";
-      link.href = canvas.toDataURL("image/png");
+      link.download = `إعلان-فعالية-جامعة-سطام.${fmt.ext}`;
+      link.href = canvas.toDataURL(fmt.mime, fmt.quality);
       link.click();
     } catch (err) {
       console.error(err);
@@ -114,7 +136,7 @@ export default function AdGenerator() {
     } finally {
       setIsExporting(false);
     }
-  }, []);
+  }, [exportFormat]);
 
   const isOnline = data.locationType === "teams" || data.locationType === "zoom";
 
@@ -282,6 +304,29 @@ export default function AdGenerator() {
             </button>
           </Section>
 
+          {/* ══ EXPORT FORMAT ══ */}
+          <Section title="صيغة الحفظ">
+            <div className="grid grid-cols-3 gap-2">
+              {FORMAT_OPTIONS.map(fmt => (
+                <button
+                  key={fmt.id}
+                  data-testid={`format-${fmt.id}`}
+                  onClick={() => setExportFormat(fmt.id)}
+                  className={`rounded-xl border-2 p-3 transition-all flex flex-col items-center gap-1 ${
+                    exportFormat === fmt.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/40 hover:bg-muted/40"
+                  }`}
+                >
+                  <span className="text-sm font-bold tracking-wider">{fmt.label}</span>
+                  <span className="text-[10px] text-center text-muted-foreground leading-tight">
+                    {fmt.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </Section>
+
           {/* Actions */}
           <div className="flex gap-3">
             <Button data-testid="button-export" onClick={exportAsImage} disabled={isExporting}
@@ -289,7 +334,9 @@ export default function AdGenerator() {
               {isExporting
                 ? <RefreshCw className="h-4 w-4 animate-spin" />
                 : <Download className="h-4 w-4" />}
-              {isExporting ? "جاري التصدير..." : "تحميل الصورة"}
+              {isExporting
+                ? "جاري التصدير..."
+                : `تحميل الصورة (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
             </Button>
             <Button data-testid="button-reset" variant="outline"
               onClick={() => { setData({ ...DEFAULT_DATA }); setSelectedPreset(1); }}
