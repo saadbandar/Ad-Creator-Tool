@@ -62,6 +62,10 @@ export default function AdGenerator() {
   const [exportFormat, setExportFormat] = useState<ExportFormat>("webp");
   const [isExporting, setIsExporting] = useState(false);
 
+  /* Raw picker values (internal) */
+  const [rawTime, setRawTime] = useState("");
+  const [rawDate, setRawDate] = useState("");
+
   const [scale, setScale] = useState(0.35);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const exportRef  = useRef<HTMLDivElement>(null);
@@ -108,6 +112,32 @@ export default function AdGenerator() {
     const reader = new FileReader();
     reader.onload = ev => ev.target?.result && set("qrCodeImage", ev.target.result as string);
     reader.readAsDataURL(file);
+  };
+
+  /* ── Time picker: "HH:MM" → "٩:٣٠ ص" ── */
+  const handleTimeChange = (raw: string) => {
+    setRawTime(raw);
+    if (!raw) return;
+    const [hStr, mStr] = raw.split(":");
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const period = h >= 12 ? "م" : "ص";
+    const h12 = h % 12 || 12;
+    const formatted = `${h12}:${m.toString().padStart(2, "0")} ${period}`;
+    set("time", formatted);
+  };
+
+  /* ── Date picker: "YYYY-MM-DD" → day name + formatted date ── */
+  const handleDateChange = (raw: string) => {
+    setRawDate(raw);
+    if (!raw) return;
+    const d = new Date(raw + "T12:00:00"); // noon avoids timezone flips
+    const dayName = new Intl.DateTimeFormat("ar-SA", { weekday: "long" }).format(d);
+    const dateStr = new Intl.DateTimeFormat("ar-SA", {
+      day: "numeric", month: "long", year: "numeric",
+    }).format(d);
+    set("day",  dayName);
+    set("date", dateStr);
   };
 
   const exportAsImage = useCallback(async () => {
@@ -225,10 +255,40 @@ export default function AdGenerator() {
 
           {/* Date & Time */}
           <Section title="التاريخ والوقت">
-            <div className="grid grid-cols-3 gap-2">
-              <Field label="الساعة" value={data.time} onChange={v => set("time", v)} />
-              <Field label="اليوم"  value={data.day}  onChange={v => set("day", v)} />
-              <Field label="التاريخ" value={data.date} onChange={v => set("date", v)} />
+            <div className="grid grid-cols-2 gap-3">
+              {/* ── Time picker ── */}
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">الساعة</p>
+                <input
+                  type="time"
+                  value={rawTime}
+                  onChange={e => handleTimeChange(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-right focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  style={{ direction: "ltr", colorScheme: "light" }}
+                />
+                {data.time && rawTime && (
+                  <p className="text-[11px] text-primary font-medium text-right">
+                    سيظهر: {data.time}
+                  </p>
+                )}
+              </div>
+
+              {/* ── Date picker ── */}
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">التاريخ</p>
+                <input
+                  type="date"
+                  value={rawDate}
+                  onChange={e => handleDateChange(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  style={{ direction: "ltr", colorScheme: "light" }}
+                />
+                {data.date && rawDate && (
+                  <p className="text-[11px] text-primary font-medium text-right">
+                    {data.day} — {data.date}
+                  </p>
+                )}
+              </div>
             </div>
           </Section>
 
@@ -339,7 +399,12 @@ export default function AdGenerator() {
                 : `تحميل الصورة (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
             </Button>
             <Button data-testid="button-reset" variant="outline"
-              onClick={() => { setData({ ...DEFAULT_DATA }); setSelectedPreset(1); }}
+              onClick={() => {
+                setData({ ...DEFAULT_DATA });
+                setSelectedPreset(1);
+                setRawTime("");
+                setRawDate("");
+              }}
               className="gap-2">
               <RefreshCw className="h-4 w-4" />
               إعادة تعيين
