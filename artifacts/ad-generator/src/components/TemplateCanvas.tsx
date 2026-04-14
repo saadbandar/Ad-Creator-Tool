@@ -173,13 +173,13 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             textAlign: "right",
             display: "flex", flexDirection: "column", gap: 12,
           }}>
-            <p style={{ color: DEEP_GREEN, fontSize: 32, fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
+            <p style={{ color: DEEP_GREEN, fontSize: 40, fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
               تـدعوكم جـامعة الأمير سطام بن عبدالعزيـز
             </p>
-            <p style={{ color: "#333", fontSize: 29, fontWeight: 400, margin: 0, lineHeight: 1.5 }}>
+            <p style={{ color: "#333", fontSize: 36, fontWeight: 400, margin: 0, lineHeight: 1.5 }}>
               ممثلة بـ "{departmentName}"
             </p>
-            <p style={{ color: "#333", fontSize: 29, fontWeight: 400, margin: 0, lineHeight: 1.5 }}>
+            <p style={{ color: "#333", fontSize: 36, fontWeight: 400, margin: 0, lineHeight: 1.5 }}>
               لحضور "{eventType}"
             </p>
           </div>
@@ -188,7 +188,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           <div style={{ marginTop: 36, width: "100%", textAlign: "center" }}>
             <p style={{
               color: DARK_TEAL,
-              fontSize: 58,
+              fontSize: 68,
               fontWeight: 900,
               lineHeight: 1.35,
               margin: 0,
