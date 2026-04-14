@@ -2,6 +2,7 @@ import { useState, useRef, useCallback, useId, useEffect } from "react";
 import html2canvas from "html2canvas";
 import defaultBg from "@assets/social_media-03_1776117368027.png";
 import patternImg from "@assets/pattern_1776117955422.png";
+import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Download, RefreshCw, ImageIcon, Eye } from "lucide-react";
@@ -97,7 +98,7 @@ export default function AdGenerator() {
     setItems(DEFAULT_ITEMS.map(i => ({ ...i })));
   };
 
-  const adProps = { bgImage, title, items, pattern: patternImg };
+  const adProps = { bgImage, title, items, pattern: patternImg, logo: logoImg };
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
@@ -121,7 +122,13 @@ export default function AdGenerator() {
       {/* App header */}
       <header className="bg-[#1e3d2f] text-white shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
-          <PsauLogo size={44} color="#6ac7bd" />
+          <div style={{ backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 8, padding: "4px 8px" }}>
+            <img
+              src={logoImg}
+              alt="شعار الجامعة"
+              style={{ height: 36, display: "block", mixBlendMode: "screen" }}
+            />
+          </div>
           <div>
             <h1 className="text-base font-bold leading-tight">مولّد الإعلانات</h1>
             <p className="text-xs opacity-70">جامعة الأمير سطام بن عبدالعزيز</p>
@@ -271,11 +278,12 @@ export default function AdGenerator() {
 /* ─────────────────────────────────────────────────────────────────
    AdCanvas — always rendered at exactly 1080×1080px, no transforms
 ───────────────────────────────────────────────────────────────── */
-function AdCanvas({ bgImage, title, items, pattern }: {
+function AdCanvas({ bgImage, title, items, pattern, logo }: {
   bgImage: string;
   title: string;
   items: ContentItem[];
   pattern: string;
+  logo: string;
 }) {
   const TOP_H = 575;
   const CURVE_H = 80;
@@ -310,20 +318,24 @@ function AdCanvas({ bgImage, title, items, pattern }: {
           background: "linear-gradient(180deg, rgba(15,40,27,0.70) 0%, rgba(20,52,34,0.82) 55%, rgba(14,36,22,0.94) 100%)",
         }} />
 
-        {/* University logo — top right */}
+        {/* University logo — top right, on frosted white pill */}
         <div style={{
-          position: "absolute", top: 30, right: 32,
-          display: "flex", alignItems: "flex-start", gap: 16, direction: "rtl",
+          position: "absolute", top: 22, right: 28,
+          backgroundColor: "rgba(255,255,255,0.18)",
+          backdropFilter: "blur(6px)",
+          borderRadius: 14,
+          padding: "10px 16px",
         }}>
-          <PsauLogo size={76} color="#6ac7bd" />
-          <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-            <span style={{ color: "#fff", fontSize: 19, fontWeight: 700, lineHeight: 1.25, textAlign: "right" }}>جامعة الأميـر</span>
-            <span style={{ color: "#fff", fontSize: 32, fontWeight: 900, lineHeight: 1.1, textAlign: "right" }}>سطام</span>
-            <span style={{ color: "#fff", fontSize: 19, fontWeight: 700, lineHeight: 1.25, textAlign: "right" }}>بن عبدالعزيز</span>
-            <span style={{ color: "#fff", fontSize: 11.5, fontWeight: 400, lineHeight: 1.3, opacity: 0.85, letterSpacing: "0.06em", textAlign: "right", marginTop: 4 }}>
-              PRINCE SATTAM BIN ABDULAZIZ UNIVERSITY
-            </span>
-          </div>
+          <img
+            src={logo}
+            alt="جامعة الأمير سطام بن عبدالعزيز"
+            crossOrigin="anonymous"
+            style={{
+              width: 200,
+              display: "block",
+              mixBlendMode: "multiply",
+            }}
+          />
         </div>
 
         {/* Main title — above curve */}
@@ -427,23 +439,3 @@ function AdCanvas({ bgImage, title, items, pattern }: {
   );
 }
 
-/* ── PSAU Arch/Gate Logo ── */
-function PsauLogo({ size, color }: { size: number; color: string }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 120 130" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-      <circle cx="60" cy="62" r="56" stroke={color} strokeWidth="2.5" fill="none" />
-      <path d="M18,110 L18,62 Q18,18 60,16 Q102,18 102,62 L102,110" stroke={color} strokeWidth="5" fill="none" strokeLinecap="round" />
-      <path d="M33,110 L33,66 Q33,34 60,32 Q87,34 87,66 L87,110" stroke={color} strokeWidth="3.5" fill="none" strokeLinecap="round" />
-      <path d="M47,110 L47,75 Q47,58 60,57 Q73,58 73,75 L73,110" stroke={color} strokeWidth="2.5" fill={color} fillOpacity="0.18" strokeLinecap="round" />
-      <path d="M53,16 Q60,7 67,16" stroke={color} strokeWidth="2.5" fill="none" strokeLinecap="round" />
-      <circle cx="60" cy="5" r="4.5" fill={color} />
-      <rect x="13" y="108" width="12" height="6" rx="2" fill={color} />
-      <rect x="95" y="108" width="12" height="6" rx="2" fill={color} />
-      <rect x="10" y="113" width="100" height="5" rx="2" fill={color} />
-      <line x1="33" y1="80" x2="47" y2="80" stroke={color} strokeWidth="1.5" opacity="0.6" />
-      <line x1="73" y1="80" x2="87" y2="80" stroke={color} strokeWidth="1.5" opacity="0.6" />
-      <line x1="33" y1="92" x2="47" y2="92" stroke={color} strokeWidth="1.5" opacity="0.6" />
-      <line x1="73" y1="92" x2="87" y2="92" stroke={color} strokeWidth="1.5" opacity="0.6" />
-    </svg>
-  );
-}
