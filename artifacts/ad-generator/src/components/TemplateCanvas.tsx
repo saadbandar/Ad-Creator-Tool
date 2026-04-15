@@ -99,6 +99,14 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             ${DARK_TEAL}95 100%)`,
         }} />
 
+        {/* Pattern / vector watermark over the dark overlay */}
+        <img src={patternImg} alt="" crossOrigin="anonymous" style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover", opacity: 0.07, pointerEvents: "none",
+          mixBlendMode: "overlay",
+        }} />
+
         {/* ── "دعـوة" — large white text over the photo, near the bottom ── */}
         <div style={{
           position: "absolute",
@@ -113,10 +121,9 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             fontSize: 110,
             fontWeight: 900,
             lineHeight: 1,
-            letterSpacing: "0.06em",
             display: "block",
           }}>
-            دعـــوة
+            دعوة
           </span>
         </div>
       </div>
@@ -176,7 +183,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           {/* ── Invitation text — 3 lines, NO quotation marks ── */}
           <div style={{
             width: "100%",
-            textAlign: "right",
+            textAlign: "center",
             display: "flex", flexDirection: "column", gap: 6,
           }}>
             <p style={{ color: DEEP_GREEN, fontSize: 40, fontWeight: 700, margin: 0, lineHeight: 1.65 }}>
