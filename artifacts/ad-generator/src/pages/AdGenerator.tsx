@@ -86,6 +86,7 @@ const ImagePanControl = ({
   const onPointerUp = () => { isDragging.current = false; };
 
   return (
+    <>
     <div
       ref={containerRef}
       onPointerDown={onPointerDown}
@@ -189,6 +190,7 @@ const ImagePanControl = ({
         {zoom.toFixed(1)}×
       </span>
     </div>
+    </>
   );
 };
 
