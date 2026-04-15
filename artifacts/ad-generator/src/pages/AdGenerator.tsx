@@ -9,7 +9,6 @@ import { Download, RefreshCw, ImageIcon, Eye, QrCode } from "lucide-react";
 import {
   CANVAS_W, CANVAS_H,
   EventAdCanvas,
-  TEMPLATE_PRESETS,
   type EventAdData,
   type LocationType,
 } from "@/components/TemplateCanvas";
@@ -29,13 +28,6 @@ const DEFAULT_DATA: EventAdData = {
   venue: "الـوصـف",
   hasCertificate: false,
   qrCodeImage: undefined,
-};
-
-/* icons for template preset cards */
-const PRESET_ICONS: Record<string, string> = {
-  "in-person": "📍",
-  "teams": "💻",
-  "zoom": "🎥",
 };
 
 type ExportFormat = "webp" | "png" | "jpeg";
@@ -170,7 +162,6 @@ const ImagePanControl = ({
 
 export default function AdGenerator() {
   const [data, setData] = useState<EventAdData>({ ...DEFAULT_DATA });
-  const [selectedPreset, setSelectedPreset] = useState<number>(1);
   const [exportFormat, setExportFormat] = useState<ExportFormat>("webp");
   const [isExporting, setIsExporting] = useState(false);
 
@@ -196,19 +187,6 @@ export default function AdGenerator() {
 
   const set = <K extends keyof EventAdData>(key: K, value: EventAdData[K]) =>
     setData(prev => ({ ...prev, [key]: value }));
-
-  /* Apply a preset — keeps editable text but switches locationType & hasCertificate */
-  const applyPreset = (presetId: number) => {
-    const preset = TEMPLATE_PRESETS.find(p => p.id === presetId);
-    if (!preset) return;
-    setSelectedPreset(presetId);
-    setData(prev => ({
-      ...prev,
-      locationType:   preset.locationType,
-      hasCertificate: preset.hasCertificate,
-      qrCodeImage: prev.locationType === preset.locationType ? prev.qrCodeImage : undefined,
-    }));
-  };
 
   const handleBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -311,29 +289,6 @@ export default function AdGenerator() {
 
         {/* ── Controls ── */}
         <div className="space-y-4">
-
-          {/* ══ TEMPLATE SELECTOR ══ */}
-          <Section title="اختر القالب">
-            <div className="grid grid-cols-2 gap-2">
-              {TEMPLATE_PRESETS.map(preset => (
-                <button
-                  key={preset.id}
-                  onClick={() => applyPreset(preset.id)}
-                  className={`rounded-xl border-2 p-3 transition-all text-right flex flex-col gap-1 ${
-                    selectedPreset === preset.id
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border hover:border-primary/40 hover:bg-muted/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-base">{PRESET_ICONS[preset.locationType]}</span>
-                    <span className="text-xs font-bold leading-tight">{preset.label}</span>
-                  </div>
-                  <span className="text-[10px] text-muted-foreground">قالب {preset.id}</span>
-                </button>
-              ))}
-            </div>
-          </Section>
 
           {/* Background image */}
           <Section title="صورة الخلفية">
