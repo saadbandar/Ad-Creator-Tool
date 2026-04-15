@@ -266,11 +266,6 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               {/* Day + Date */}
               <InfoRow icon={iconCalendar} text={`${day}  ${date}`} subText={undefined} subLogo={undefined} />
 
-              {/* Certificate */}
-              {hasCertificate && (
-                <InfoRow icon={iconCert} text="يوجد شهادات حضور" subText={undefined} subLogo={undefined} />
-              )}
-
               {/* Location */}
               {isOnline ? (
                 <InfoRow
@@ -281,6 +276,11 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
                 />
               ) : (
                 <InfoRow icon={iconLocation} text={venue} subText={undefined} subLogo={undefined} />
+              )}
+
+              {/* Certificate — always last */}
+              {hasCertificate && (
+                <InfoRow icon={iconCert} text="يوجد شهادات حضور" subText={undefined} subLogo={undefined} />
               )}
 
             </div>
