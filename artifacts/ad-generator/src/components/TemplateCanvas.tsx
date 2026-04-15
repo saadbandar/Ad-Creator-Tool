@@ -224,11 +224,11 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               تدعوكم كلية إدارة الأعمال بحوطة بني تميم
             </p>
             {representedBy && (
-              <p style={{ color: DARK_TEAL, fontSize: 34, fontWeight: 600, margin: 0, lineHeight: 1.5 }}>
+              <p style={{ color: DARK_TEAL, fontSize: 42, fontWeight: 600, margin: 0, lineHeight: 1.5 }}>
                 ممثلة بـ {representedBy}
               </p>
             )}
-            <p style={{ color: "#1a1a1a", fontSize: 37, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
+            <p style={{ color: "#1a1a1a", fontSize: 46, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
               لحضـور {eventType}
             </p>
           </div>
