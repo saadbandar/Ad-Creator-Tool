@@ -14,6 +14,10 @@ import {
   type EventAdData,
   type LocationType,
 } from "@/components/TemplateCanvas";
+import {
+  CANVAS_W_L, CANVAS_H_L,
+  EventAdLandscapeCanvas,
+} from "@/components/TemplateLandscapeCanvas";
 
 /* ── Default data ── */
 const DEFAULT_DATA: EventAdData = {
@@ -205,21 +209,25 @@ export default function AdGenerator() {
   const [rawTime, setRawTime] = useState("");
   const [rawDate, setRawDate] = useState("");
 
+  const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [scale, setScale] = useState(0.35);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const exportRef  = useRef<HTMLDivElement>(null);
   const bgInputId  = useId();
   const qrInputId  = useId();
 
+  const activeW = orientation === "portrait" ? CANVAS_W   : CANVAS_W_L;
+  const activeH = orientation === "portrait" ? CANVAS_H   : CANVAS_H_L;
+
   useEffect(() => {
     const el = wrapperRef.current;
     if (!el) return;
     const ro = new ResizeObserver(([entry]) => {
-      setScale(entry.contentRect.width / CANVAS_W);
+      setScale(entry.contentRect.width / activeW);
     });
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [orientation, activeW]);
 
   const set = <K extends keyof EventAdData>(key: K, value: EventAdData[K]) =>
     setData(prev => ({ ...prev, [key]: value }));
@@ -277,8 +285,8 @@ export default function AdGenerator() {
       const canvas = await html2canvas(el, {
         scale: 1, useCORS: true, allowTaint: true,
         backgroundColor: "#ffffff", logging: false,
-        width: CANVAS_W, height: CANVAS_H,
-        windowWidth: CANVAS_W, windowHeight: CANVAS_H,
+        width: activeW, height: activeH,
+        windowWidth: activeW, windowHeight: activeH,
         imageTimeout: 20000,
       });
       el.style.visibility = "hidden";
@@ -292,7 +300,7 @@ export default function AdGenerator() {
     } finally {
       setIsExporting(false);
     }
-  }, [exportFormat]);
+  }, [exportFormat, activeW, activeH, orientation]);
 
   const isOnline = data.locationType === "teams" || data.locationType === "zoom";
 
@@ -301,10 +309,13 @@ export default function AdGenerator() {
       {/* Hidden full-size export canvas */}
       <div ref={exportRef} style={{
         position: "fixed", top: 0, left: "-9999px",
-        width: CANVAS_W, height: CANVAS_H,
+        width: activeW, height: activeH,
         visibility: "hidden", zIndex: -1, pointerEvents: "none",
       }}>
-        <EventAdCanvas data={data} />
+        {orientation === "portrait"
+          ? <EventAdCanvas data={data} />
+          : <EventAdLandscapeCanvas data={data} />
+        }
       </div>
 
       {/* Header */}
@@ -531,39 +542,69 @@ export default function AdGenerator() {
           </div>
         </div>
 
-        {/* ── Preview (9:16 portrait) ── */}
+        {/* ── Preview ── */}
         <div className="space-y-3">
           <div className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
             <div className="flex items-center justify-between mb-3 pb-2 border-b border-border">
               <h2 className="text-sm font-bold">معاينة الإعلان</h2>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Eye className="h-3.5 w-3.5" />
-                1080 × 1920 بكسل
+                {orientation === "portrait" ? "1080 × 1920" : "1920 × 1080"} بكسل
               </div>
             </div>
 
-            {/* 9:16 wrapper */}
+            {/* Orientation toggle */}
+            <div className="flex gap-2 mb-3">
+              {(["portrait", "landscape"] as const).map(o => (
+                <button
+                  key={o}
+                  onClick={() => setOrientation(o)}
+                  className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
+                    orientation === o
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border hover:border-primary/40"
+                  }`}
+                >
+                  {o === "portrait"
+                    ? <><span style={{ fontSize: 16 }}>▮</span> عمودي (Story)</>
+                    : <><span style={{ fontSize: 16 }}>▬</span> أفقي (Landscape)</>
+                  }
+                </button>
+              ))}
+            </div>
+
+            {/* Canvas wrapper */}
             <div
               ref={wrapperRef}
               className="w-full bg-muted/30 rounded-lg mx-auto"
-              style={{ aspectRatio: "9/16", position: "relative", overflow: "hidden", maxWidth: 480 }}
+              style={{
+                aspectRatio: orientation === "portrait" ? "9/16" : "16/9",
+                position: "relative", overflow: "hidden",
+                maxWidth: orientation === "portrait" ? 420 : "100%",
+              }}
             >
               <div style={{
                 position: "absolute", top: 0, left: 0,
                 transform: `scale(${scale})`,
                 transformOrigin: "top left",
-                width: CANVAS_W,
-                height: CANVAS_H,
+                width: activeW,
+                height: activeH,
                 pointerEvents: "none",
               }}>
-                <EventAdCanvas data={data} />
+                {orientation === "portrait"
+                  ? <EventAdCanvas data={data} />
+                  : <EventAdLandscapeCanvas data={data} />
+                }
               </div>
             </div>
           </div>
 
           <div className="bg-accent/20 border border-accent-border rounded-lg px-4 py-2.5">
             <p className="text-xs text-foreground/70">
-              <strong>ملاحظة:</strong> ستُحمَّل الصورة بدقة 1080×1920 بكسل مناسبة لقصص سناب شات وإنستغرام.
+              {orientation === "portrait"
+                ? <><strong>عمودي:</strong> 1080×1920 بكسل — مناسب لقصص سناب شات وإنستغرام.</>
+                : <><strong>أفقي:</strong> 1920×1080 بكسل — مناسب للشاشات والعروض التقديمية.</>
+              }
             </p>
           </div>
         </div>

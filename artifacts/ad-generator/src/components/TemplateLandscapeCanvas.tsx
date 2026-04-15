@@ -1,0 +1,304 @@
+/* ─────────────────────────────────────────────────────────────────
+   PSAU Event Announcement Template — Landscape 1920×1080
+   Mirror of the portrait template, rotated to horizontal layout.
+─────────────────────────────────────────────────────────────────── */
+import patternImg         from "@assets/image2.png";
+import patternTransparent from "@assets/pattern_transparent.png";
+import socialBar          from "@assets/image3.png";
+import iconClock          from "@assets/image6.png";
+import iconCalendar       from "@assets/image7.png";
+import iconLocation       from "@assets/image8.png";
+import iconCert           from "@assets/image9.png";
+import logoTeams          from "@assets/image10.png";
+import logoZoom           from "@assets/image11.png";
+import logoUnivWhite      from "@assets/logo_white.png";
+import type { EventAdData } from "./TemplateCanvas";
+
+export const CANVAS_W_L = 1920;
+export const CANVAS_H_L = 1080;
+
+const TEAL       = "#5ab8b0";
+const DARK_TEAL  = "#3c7974";
+const DEEP_GREEN = "#0e3020";
+
+const PHOTO_W   = 710;
+const ARC_START = 628;
+const ARC_W     = 160;
+const WHITE_LEFT = 768;
+const FOOTER_H   = 118;
+
+export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
+  const {
+    bgImage, bgPositionX, bgPositionY, bgZoom,
+    representedBy, eventType, eventTitle,
+    time, day, date,
+    locationType, venue,
+    hasCertificate, qrCodeImage,
+  } = data;
+
+  const isOnline     = locationType !== "in-person";
+  const platformLogo = locationType === "teams" ? logoTeams : logoZoom;
+  const platformName = locationType === "teams" ? "Microsoft Teams" : "Zoom";
+
+  return (
+    <div style={{
+      width: CANVAS_W_L, height: CANVAS_H_L,
+      position: "relative", overflow: "hidden",
+      backgroundColor: "#ffffff",
+      fontFamily: "'Cairo','Arial',sans-serif",
+      direction: "rtl",
+    }}>
+
+      {/* ══ 1. PHOTO SECTION — left side ══ */}
+      <div style={{ position: "absolute", top: 0, left: 0, width: PHOTO_W, bottom: 0 }}>
+
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+          <img src={bgImage} alt="" crossOrigin="anonymous" style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%", objectFit: "cover",
+            objectPosition: `${bgPositionX ?? 50}% ${bgPositionY ?? 50}%`,
+            transform: `scale(${bgZoom ?? 1})`,
+            transformOrigin: `${bgPositionX ?? 50}% ${bgPositionY ?? 50}%`,
+          }} />
+        </div>
+
+        <div style={{
+          position: "absolute", inset: 0,
+          background: `linear-gradient(150deg,
+            ${DEEP_GREEN}e8 0%,
+            ${DARK_TEAL}d4 45%,
+            ${DARK_TEAL}c0 80%,
+            ${DARK_TEAL}95 100%)`,
+        }} />
+
+        <img src={patternImg} alt="" crossOrigin="anonymous" style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover", opacity: 0.07, pointerEvents: "none",
+          mixBlendMode: "overlay",
+        }} />
+
+        {/* University logo — centered at top */}
+        <div style={{
+          position: "absolute", top: 36, left: 0, right: 0,
+          display: "flex", justifyContent: "center", zIndex: 10,
+        }}>
+          <img src={logoUnivWhite} alt="" crossOrigin="anonymous"
+            style={{ width: 210, display: "block" }} />
+        </div>
+
+        {/* "دعوة" */}
+        <div style={{
+          position: "absolute", bottom: 72, left: 0, right: 0,
+          textAlign: "center", zIndex: 5,
+        }}>
+          <span style={{
+            color: "#ffffff",
+            fontSize: 100,
+            fontWeight: 900,
+            lineHeight: 1,
+            display: "block",
+          }}>
+            دعوة
+          </span>
+        </div>
+      </div>
+
+      {/* ══ 2. VERTICAL ARC SEPARATOR ══ */}
+      <div style={{
+        position: "absolute", top: 0, bottom: 0,
+        left: ARC_START, width: ARC_W, zIndex: 15,
+      }}>
+        <svg
+          viewBox={`0 0 ${ARC_W} ${CANVAS_H_L}`}
+          preserveAspectRatio="none"
+          width={ARC_W} height={CANVAS_H_L}
+        >
+          <defs>
+            <linearGradient id="arcVGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%"   stopColor={TEAL} stopOpacity="0"    />
+              <stop offset="25%"  stopColor={TEAL} stopOpacity="0.75" />
+              <stop offset="50%"  stopColor={TEAL} stopOpacity="1"    />
+              <stop offset="75%"  stopColor={TEAL} stopOpacity="0.75" />
+              <stop offset="100%" stopColor={TEAL} stopOpacity="0"    />
+            </linearGradient>
+          </defs>
+
+          {/* White wedge that forms the right (white) section edge */}
+          <path
+            d={`M${ARC_W},0 L${ARC_W},${CANVAS_H_L} L0,${CANVAS_H_L} Q${ARC_W * 0.72},${CANVAS_H_L / 2} 0,0 Z`}
+            fill="#ffffff"
+          />
+
+          {/* Teal tapered ribbon — thick at center, tapers to nothing at top/bottom */}
+          <path
+            d={`M0,0 Q${ARC_W * 0.72},${CANVAS_H_L / 2} 0,${CANVAS_H_L}
+                Q${ARC_W * 0.42},${CANVAS_H_L / 2} 0,0 Z`}
+            fill="url(#arcVGrad)"
+          />
+        </svg>
+      </div>
+
+      {/* ══ 3. WHITE SECTION — right side (above footer) ══ */}
+      <div style={{
+        position: "absolute",
+        top: 0, left: WHITE_LEFT, right: 0,
+        bottom: FOOTER_H,
+        backgroundColor: "#ffffff",
+        zIndex: 5, overflow: "hidden",
+      }}>
+        {/* Pattern overlay — fades toward the arc side */}
+        <img src={patternTransparent} alt="" crossOrigin="anonymous" style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%",
+          objectFit: "cover", objectPosition: "center",
+          opacity: 0.11, pointerEvents: "none",
+          WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 30%, transparent 100%)",
+          maskImage:        "linear-gradient(to left, rgba(0,0,0,1) 30%, transparent 100%)",
+        }} />
+
+        {/* Content column */}
+        <div style={{
+          position: "relative", zIndex: 2,
+          display: "flex", flexDirection: "column",
+          alignItems: "flex-end",
+          padding: "40px 60px 32px 44px",
+          height: "100%", boxSizing: "border-box",
+        }}>
+
+          {/* Invitation text */}
+          <div style={{
+            width: "100%", textAlign: "center",
+            display: "flex", flexDirection: "column", gap: 6,
+          }}>
+            <p style={{ color: DEEP_GREEN, fontSize: 34, fontWeight: 700, margin: 0, lineHeight: 1.55 }}>
+              تدعوكم كلية إدارة الأعمال بحوطة بني تميم
+            </p>
+            {representedBy && (
+              <p style={{ color: DARK_TEAL, fontSize: 36, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
+                ممثلة بـ {representedBy}
+              </p>
+            )}
+            <p style={{ color: "#1a1a1a", fontSize: 38, fontWeight: 500, margin: 0, lineHeight: 1.55 }}>
+              لحضـور {eventType}
+            </p>
+          </div>
+
+          {/* Event title */}
+          <div style={{ marginTop: 22, width: "100%", textAlign: "center" }}>
+            <p style={{
+              color: TEAL, fontSize: 56, fontWeight: 900,
+              lineHeight: 1.4, margin: 0,
+            }}>
+              {eventTitle}
+            </p>
+          </div>
+
+          {/* Info card */}
+          <div style={{
+            marginTop: "auto",
+            width: "100%",
+            backgroundColor: "#eaf5f4",
+            borderRadius: 22,
+            padding: "26px 34px",
+            display: "flex", flexDirection: "row",
+            alignItems: "center",
+            gap: 30, direction: "ltr", boxSizing: "border-box",
+          }}>
+
+            {/* QR — left side */}
+            {isOnline && (
+              <div style={{
+                flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: 170, height: 170,
+                backgroundColor: "#fff", borderRadius: 14, padding: 7,
+              }}>
+                {qrCodeImage ? (
+                  <img src={qrCodeImage} alt="QR" crossOrigin="anonymous"
+                    style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 7 }} />
+                ) : (
+                  <div style={{
+                    width: "100%", height: "100%",
+                    border: `3px dashed ${TEAL}`, borderRadius: 9,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <span style={{ color: TEAL, fontSize: 20, fontWeight: 600 }}>QR</span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Info rows — right side */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, direction: "rtl" }}>
+              <LInfoRow icon={iconClock}    text={time} />
+              <LInfoRow icon={iconCalendar} text={`${day}  ${date}`} />
+              {isOnline ? (
+                <LInfoRow icon={iconLocation} text="عن بُعد" subText={platformName} subLogo={platformLogo} />
+              ) : (
+                <LInfoRow icon={iconLocation} text={venue} />
+              )}
+              {hasCertificate && (
+                <LInfoRow icon={iconCert} text="يوجد شهادات حضور" />
+              )}
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      {/* ══ 4. FOOTER — dark teal, spans right section ══ */}
+      <div style={{
+        position: "absolute",
+        bottom: 0, left: WHITE_LEFT, right: 0,
+        height: FOOTER_H,
+        backgroundColor: DARK_TEAL,
+        zIndex: 20,
+        display: "flex", alignItems: "center",
+        padding: "0 34px", direction: "ltr", gap: 22,
+      }}>
+        <span style={{
+          color: "#ffffff", fontSize: 28, fontWeight: 700,
+          flexShrink: 0, letterSpacing: 0.4,
+        }}>
+          وحدة العلاقات العامة
+        </span>
+        <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
+          <img src={socialBar} alt="" crossOrigin="anonymous"
+            style={{ height: 68, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+        </div>
+      </div>
+
+    </div>
+  );
+}
+
+function LInfoRow({
+  icon, text, subText, subLogo,
+}: {
+  icon: string;
+  text: string;
+  subText?: string;
+  subLogo?: string;
+}) {
+  return (
+    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, direction: "rtl" }}>
+      <img src={icon} alt="" crossOrigin="anonymous"
+        style={{ width: 50, height: 50, objectFit: "contain", flexShrink: 0 }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ color: DEEP_GREEN, fontSize: 32, fontWeight: 700, lineHeight: 1.2 }}>
+          {text}
+        </span>
+        {subText && (
+          <span style={{ color: "#444", fontSize: 28, fontWeight: 500, lineHeight: 1.2 }}>
+            {subText}
+          </span>
+        )}
+        {subLogo && (
+          <img src={subLogo} alt="" crossOrigin="anonymous"
+            style={{ height: 24, objectFit: "contain", alignSelf: "flex-start", marginTop: 2 }} />
+        )}
+      </div>
+    </div>
+  );
+}
