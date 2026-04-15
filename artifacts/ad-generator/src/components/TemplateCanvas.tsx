@@ -174,8 +174,8 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           objectPosition: "center top",
           opacity: 0.13,
           pointerEvents: "none",
-          WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 80%)",
-          maskImage:        "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 80%)",
+          WebkitMaskImage: "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 80%)",
+          maskImage:        "linear-gradient(to top, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 40%, transparent 80%)",
         }} />
 
         {/* Content column */}
