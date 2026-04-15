@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useId, useEffect } from "react";
+import { useState, useRef, useCallback, useId, useEffect, type PointerEvent } from "react";
 import html2canvas from "html2canvas";
 import defaultBg from "@assets/image1.png";
 import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
@@ -17,6 +17,8 @@ import {
 /* ── Default data ── */
 const DEFAULT_DATA: EventAdData = {
   bgImage: defaultBg,
+  bgPositionX: 50,
+  bgPositionY: 50,
   departmentName: "النص هنا (اسم الجهة)",
   eventType: "النص هنا (نوع الفعالية: دورة، محاضرة، ورشة عمل، ...)",
   eventTitle: "النص هنا (عنوان الفعالية)",
@@ -55,6 +57,116 @@ const FORMAT_OPTIONS: FormatOption[] = [
   { id: "jpeg", mime: "image/jpeg", ext: "jpg",  label: "JPEG", quality: 0.92,
     hint: "أصغر حجم — مناسب للمشاركة السريعة" },
 ];
+
+/* ── Interactive image pan control ── */
+const ImagePanControl = ({
+  src, x, y, onChange,
+}: {
+  src: string;
+  x: number;
+  y: number;
+  onChange: (x: number, y: number) => void;
+}) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const isDragging   = useRef(false);
+
+  const calcPos = (e: { clientX: number; clientY: number }) => {
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const px = Math.max(0, Math.min(100, ((e.clientX - rect.left) / rect.width)  * 100));
+    const py = Math.max(0, Math.min(100, ((e.clientY - rect.top)  / rect.height) * 100));
+    onChange(Math.round(px), Math.round(py));
+  };
+
+  const onPointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    isDragging.current = true;
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    calcPos(e);
+  };
+  const onPointerMove = (e: PointerEvent<HTMLDivElement>) => {
+    if (!isDragging.current) return;
+    calcPos(e);
+  };
+  const onPointerUp = () => { isDragging.current = false; };
+
+  return (
+    <div
+      ref={containerRef}
+      onPointerDown={onPointerDown}
+      onPointerMove={onPointerMove}
+      onPointerUp={onPointerUp}
+      style={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: "16/9",
+        borderRadius: 10,
+        overflow: "hidden",
+        cursor: "crosshair",
+        userSelect: "none",
+        border: "2px solid var(--primary)",
+      }}
+    >
+      <img src={src} alt="" draggable={false} style={{
+        width: "100%", height: "100%",
+        objectFit: "cover",
+        objectPosition: `${x}% ${y}%`,
+        pointerEvents: "none",
+        display: "block",
+      }} />
+
+      {/* Semi-dark overlay outside the focus area */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: "rgba(0,0,0,0.38)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Crosshair focus indicator */}
+      <div style={{
+        position: "absolute",
+        left: `${x}%`, top: `${y}%`,
+        transform: "translate(-50%, -50%)",
+        pointerEvents: "none",
+      }}>
+        {/* Outer ring */}
+        <div style={{
+          width: 36, height: 36,
+          borderRadius: "50%",
+          border: "2px solid rgba(255,255,255,0.9)",
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+        }} />
+        {/* Inner dot */}
+        <div style={{
+          width: 10, height: 10,
+          borderRadius: "50%",
+          backgroundColor: "#5ab8b0",
+          border: "1.5px solid white",
+          position: "absolute",
+          top: "50%", left: "50%",
+          transform: "translate(-50%,-50%)",
+        }} />
+        {/* Cross lines */}
+        <div style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%,-50%)" }}>
+          <div style={{ position:"absolute", left:-14, top:-1, width:28, height:2, background:"rgba(255,255,255,0.8)" }} />
+          <div style={{ position:"absolute", top:-14, left:-1, width:2, height:28, background:"rgba(255,255,255,0.8)" }} />
+        </div>
+      </div>
+
+      {/* Tip label */}
+      <div style={{
+        position: "absolute", bottom: 6, right: 6,
+        background: "rgba(0,0,0,0.65)",
+        color: "#fff", fontSize: 10, padding: "2px 7px",
+        borderRadius: 4, pointerEvents: "none",
+        direction: "rtl",
+      }}>
+        اسحب لتحريك الصورة
+      </div>
+    </div>
+  );
+};
 
 export default function AdGenerator() {
   const [data, setData] = useState<EventAdData>({ ...DEFAULT_DATA });
@@ -235,11 +347,24 @@ export default function AdGenerator() {
               <input id={bgInputId} data-testid="input-image" type="file" accept="image/*"
                 className="hidden" onChange={handleBgUpload} />
             </label>
+
+            {/* Image pan control — shown after upload */}
             {data.bgImage !== defaultBg && (
-              <button onClick={() => set("bgImage", defaultBg)}
-                className="mt-2 text-xs text-muted-foreground hover:text-foreground transition-colors">
-                ← استخدام الصورة الافتراضية
-              </button>
+              <div className="mt-3 space-y-2">
+                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
+                  <span>🖐️</span> اسحب لاختيار الجزء المرئي من الصورة
+                </p>
+                <ImagePanControl
+                  src={data.bgImage}
+                  x={data.bgPositionX}
+                  y={data.bgPositionY}
+                  onChange={(x, y) => setData(prev => ({ ...prev, bgPositionX: x, bgPositionY: y }))}
+                />
+                <button onClick={() => set("bgImage", defaultBg)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  ← استخدام الصورة الافتراضية
+                </button>
+              </div>
             )}
           </Section>
 
@@ -483,3 +608,4 @@ function Field({ label, value, onChange, multiline }: {
     </div>
   );
 }
+

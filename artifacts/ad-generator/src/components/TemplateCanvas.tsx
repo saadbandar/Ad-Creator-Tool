@@ -21,6 +21,8 @@ export type LocationType = "in-person" | "teams" | "zoom";
 
 export interface EventAdData {
   bgImage: string;
+  bgPositionX: number;
+  bgPositionY: number;
   departmentName: string;
   eventType: string;
   eventTitle: string;
@@ -54,7 +56,7 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
 
 export function EventAdCanvas({ data }: { data: EventAdData }) {
   const {
-    bgImage,
+    bgImage, bgPositionX, bgPositionY,
     departmentName, eventType, eventTitle,
     time, day, date,
     locationType, venue,
@@ -88,6 +90,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         <img src={bgImage} alt="" crossOrigin="anonymous" style={{
           position: "absolute", inset: 0,
           width: "100%", height: "100%", objectFit: "cover",
+          objectPosition: `${bgPositionX ?? 50}% ${bgPositionY ?? 50}%`,
         }} />
 
         {/* Dark teal gradient overlay */}
