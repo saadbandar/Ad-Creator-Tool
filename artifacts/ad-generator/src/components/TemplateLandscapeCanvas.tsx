@@ -87,21 +87,6 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
             style={{ width: 210, display: "block" }} />
         </div>
 
-        {/* "دعوة" */}
-        <div style={{
-          position: "absolute", bottom: 72, left: 0, right: 0,
-          textAlign: "center", zIndex: 5,
-        }}>
-          <span style={{
-            color: "#ffffff",
-            fontSize: 100,
-            fontWeight: 900,
-            lineHeight: 1,
-            display: "block",
-          }}>
-            دعوة
-          </span>
-        </div>
       </div>
 
       {/* ══ 2. VERTICAL ARC SEPARATOR ══ */}
@@ -165,6 +150,19 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
           padding: "40px 60px 32px 44px",
           height: "100%", boxSizing: "border-box",
         }}>
+
+          {/* "دعوة" heading */}
+          <div style={{ width: "100%", textAlign: "center", marginBottom: 10 }}>
+            <span style={{
+              color: DARK_TEAL,
+              fontSize: 90,
+              fontWeight: 900,
+              lineHeight: 1,
+              display: "block",
+            }}>
+              دعوة
+            </span>
+          </div>
 
           {/* Invitation text */}
           <div style={{
