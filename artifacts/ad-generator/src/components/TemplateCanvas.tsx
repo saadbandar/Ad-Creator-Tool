@@ -11,7 +11,8 @@ import iconLocation from "@assets/image8.png";
 import iconCert     from "@assets/image9.png";
 import logoTeams    from "@assets/image10.png";
 import logoZoom     from "@assets/image11.png";
-import logoUniv     from "@assets/تصميم_بدون_عنوان_1776144448792.png";
+import logoUniv      from "@assets/تصميم_بدون_عنوان_1776144448792.png";
+import logoUnivWhite from "@assets/logo_white.png";
 
 export const CANVAS_W = 1080;
 export const CANVAS_H = 1920;
@@ -129,16 +130,13 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       </div>
 
       {/* ══════════════════════════════════════
-          2. UNIVERSITY LOGO — top right
+          2. UNIVERSITY LOGO — top right (white via CSS filter)
       ══════════════════════════════════════ */}
       <div style={{
         position: "absolute", top: 32, right: 36, zIndex: 20,
-        backgroundColor: "rgba(255,255,255,0.15)",
-        borderRadius: 14,
-        padding: "8px 14px",
       }}>
-        <img src={logoUniv} alt="" crossOrigin="anonymous"
-          style={{ width: 230, display: "block", mixBlendMode: "multiply" }} />
+        <img src={logoUnivWhite} alt="" crossOrigin="anonymous"
+          style={{ width: 240, display: "block" }} />
       </div>
 
       {/* ══════════════════════════════════════
