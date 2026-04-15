@@ -152,45 +152,35 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       }}>
         <svg viewBox="0 0 1080 120" preserveAspectRatio="none" width="1080" height="120">
           <defs>
-            <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%"   stopColor={TEAL} stopOpacity="0.15" />
-              <stop offset="30%"  stopColor={TEAL} stopOpacity="0.9"  />
-              <stop offset="50%"  stopColor="#ffffff" stopOpacity="1"  />
-              <stop offset="70%"  stopColor={TEAL} stopOpacity="0.9"  />
-              <stop offset="100%" stopColor={TEAL} stopOpacity="0.15" />
+            {/* Horizontal gradient — transparent at edges, opaque at center */}
+            <linearGradient id="arcFillGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor={TEAL} stopOpacity="0"   />
+              <stop offset="25%"  stopColor={TEAL} stopOpacity="0.75"/>
+              <stop offset="50%"  stopColor={TEAL} stopOpacity="1"   />
+              <stop offset="75%"  stopColor={TEAL} stopOpacity="0.75"/>
+              <stop offset="100%" stopColor={TEAL} stopOpacity="0"   />
             </linearGradient>
           </defs>
 
           {/* White filled background wave */}
-          <path d="M0,120 L0,70 Q540,5 1080,70 L1080,120 Z" fill="#ffffff" />
+          <path d="M0,120 L0,72 Q540,8 1080,72 L1080,120 Z" fill="#ffffff" />
 
-          {/* Decorative teal arc stroke */}
+          {/*
+            Tapered arc ribbon:
+            Upper edge: Q540,8  (tight / high)
+            Lower edge: Q540,36 (looser / lower)
+            → thick (~20 px) at center, tapers to 0 at both ends
+          */}
           <path
-            d="M0,70 Q540,5 1080,70"
-            fill="none"
-            stroke="url(#arcGrad)"
-            strokeWidth="3.5"
-            strokeLinecap="round"
+            d="M0,72 Q540,8 1080,72 Q540,36 0,72 Z"
+            fill="url(#arcFillGrad)"
           />
 
-          {/* Central diamond ornament at arc peak */}
-          <g transform="translate(540, 10)">
-            <polygon
-              points="0,-11 8,0 0,11 -8,0"
-              fill={TEAL}
-              opacity="0.85"
-            />
-            <polygon
-              points="0,-6 4,0 0,6 -4,0"
-              fill="#ffffff"
-            />
+          {/* Central diamond ornament */}
+          <g transform="translate(540, 22)">
+            <polygon points="0,-14 10,0 0,14 -10,0" fill="#ffffff" opacity="0.95" />
+            <polygon points="0,-8  5,0  0,8  -5,0"  fill={TEAL}    opacity="1"    />
           </g>
-
-          {/* Side dots */}
-          <circle cx="190" cy="54"  r="5" fill={TEAL} opacity="0.45" />
-          <circle cx="890" cy="54"  r="5" fill={TEAL} opacity="0.45" />
-          <circle cx="100" cy="63"  r="3" fill={TEAL} opacity="0.25" />
-          <circle cx="980" cy="63"  r="3" fill={TEAL} opacity="0.25" />
         </svg>
       </div>
 
