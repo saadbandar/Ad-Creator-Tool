@@ -176,11 +176,6 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             fill="url(#arcFillGrad)"
           />
 
-          {/* Central diamond ornament */}
-          <g transform="translate(540, 22)">
-            <polygon points="0,-14 10,0 0,14 -10,0" fill="#ffffff" opacity="0.95" />
-            <polygon points="0,-8  5,0  0,8  -5,0"  fill={TEAL}    opacity="1"    />
-          </g>
         </svg>
       </div>
 
