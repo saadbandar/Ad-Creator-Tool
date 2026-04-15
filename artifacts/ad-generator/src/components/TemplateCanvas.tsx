@@ -185,10 +185,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             display: "flex", flexDirection: "column", gap: 6,
           }}>
             <p style={{ color: DEEP_GREEN, fontSize: 40, fontWeight: 700, margin: 0, lineHeight: 1.65 }}>
-              تـدعوكم جـامعة الأمير سطام بن عبدالعزيـز
-            </p>
-            <p style={{ color: "#1a1a1a", fontSize: 37, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
-              ممثلة بـ {departmentName}
+              تدعوكم كلية إدارة الأعمال بحوطة بني تميم
             </p>
             <p style={{ color: "#1a1a1a", fontSize: 37, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
               لحضـور {eventType}
