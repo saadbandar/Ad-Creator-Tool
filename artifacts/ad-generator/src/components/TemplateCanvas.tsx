@@ -353,7 +353,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         </span>
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
           <img src={socialBar} alt="" crossOrigin="anonymous"
-            style={{ height: 80, objectFit: "contain" }} />
+            style={{ height: 80, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
         </div>
       </div>
 
