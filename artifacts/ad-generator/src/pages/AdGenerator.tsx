@@ -413,10 +413,10 @@ export default function AdGenerator() {
           <Section title="طريقة الحضور">
             <div className="grid grid-cols-3 gap-2">
               {([
-                { id: "in-person", label: "حضوري",  logo: null },
-                { id: "teams",     label: "Teams",   logo: logoTeams },
-                { id: "zoom",      label: "Zoom",    logo: logoZoom  },
-              ] as { id: LocationType; label: string; logo: string | null }[]).map(opt => (
+                { id: "in-person", label: "حضوري",  logo: null,      logoClass: "" },
+                { id: "teams",     label: "Teams",   logo: logoTeams, logoClass: "h-7" },
+                { id: "zoom",      label: "Zoom",    logo: logoZoom,  logoClass: "h-5" },
+              ] as { id: LocationType; label: string; logo: string | null; logoClass: string }[]).map(opt => (
                 <button
                   key={opt.id}
                   onClick={() => set("locationType", opt.id)}
@@ -427,7 +427,7 @@ export default function AdGenerator() {
                   }`}
                 >
                   {opt.logo
-                    ? <img src={opt.logo} alt={opt.label} className="h-7 w-auto object-contain" />
+                    ? <img src={opt.logo} alt={opt.label} className={`${opt.logoClass} w-auto object-contain`} />
                     : <span className="text-2xl leading-none">📍</span>
                   }
                   <span>{opt.label}</span>
