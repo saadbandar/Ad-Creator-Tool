@@ -18,6 +18,7 @@ const DEFAULT_DATA: EventAdData = {
   bgImage: defaultBg,
   bgPositionX: 50,
   bgPositionY: 50,
+  bgZoom: 1,
   departmentName: "النص هنا (اسم الجهة)",
   representedBy: "",
   eventType: "النص هنا (نوع الفعالية: دورة، محاضرة، ورشة عمل، ...)",
@@ -53,12 +54,14 @@ const FORMAT_OPTIONS: FormatOption[] = [
 
 /* ── Interactive image pan control ── */
 const ImagePanControl = ({
-  src, x, y, onChange,
+  src, x, y, zoom, onChange, onZoomChange,
 }: {
   src: string;
   x: number;
   y: number;
+  zoom: number;
   onChange: (x: number, y: number) => void;
+  onZoomChange: (z: number) => void;
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const isDragging   = useRef(false);
@@ -103,6 +106,8 @@ const ImagePanControl = ({
         width: "100%", height: "100%",
         objectFit: "cover",
         objectPosition: `${x}% ${y}%`,
+        transform: `scale(${zoom})`,
+        transformOrigin: `${x}% ${y}%`,
         pointerEvents: "none",
         display: "block",
       }} />
@@ -157,6 +162,32 @@ const ImagePanControl = ({
       }}>
         اسحب لتحريك الصورة
       </div>
+
+      {/* Zoom badge */}
+      <div style={{
+        position: "absolute", bottom: 6, left: 6,
+        background: "rgba(0,0,0,0.65)",
+        color: "#fff", fontSize: 10, padding: "2px 7px",
+        borderRadius: 4, pointerEvents: "none",
+        fontFamily: "monospace",
+      }}>
+        {zoom.toFixed(1)}×
+      </div>
+    </div>
+
+    {/* Zoom slider */}
+    <div className="flex items-center gap-2 px-1 pt-1">
+      <span className="text-xs text-muted-foreground shrink-0">🔍</span>
+      <input
+        type="range"
+        min={1} max={3} step={0.05}
+        value={zoom}
+        onChange={e => onZoomChange(parseFloat(e.target.value))}
+        className="w-full accent-primary h-1.5 cursor-pointer"
+      />
+      <span className="text-xs text-muted-foreground shrink-0 font-mono w-8 text-right">
+        {zoom.toFixed(1)}×
+      </span>
     </div>
   );
 };
@@ -314,7 +345,9 @@ export default function AdGenerator() {
                   src={data.bgImage}
                   x={data.bgPositionX}
                   y={data.bgPositionY}
+                  zoom={data.bgZoom}
                   onChange={(x, y) => setData(prev => ({ ...prev, bgPositionX: x, bgPositionY: y }))}
+                  onZoomChange={z => set("bgZoom", z)}
                 />
                 <button onClick={() => set("bgImage", defaultBg)}
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors">

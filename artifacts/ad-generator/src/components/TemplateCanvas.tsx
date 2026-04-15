@@ -24,6 +24,7 @@ export interface EventAdData {
   bgImage: string;
   bgPositionX: number;
   bgPositionY: number;
+  bgZoom: number;
   departmentName: string;
   representedBy?: string;
   eventType: string;
@@ -58,7 +59,7 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
 
 export function EventAdCanvas({ data }: { data: EventAdData }) {
   const {
-    bgImage, bgPositionX, bgPositionY,
+    bgImage, bgPositionX, bgPositionY, bgZoom,
     departmentName, representedBy, eventType, eventTitle,
     time, day, date,
     locationType, venue,
@@ -88,12 +89,16 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       ══════════════════════════════════════ */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: PHOTO_H }}>
 
-        {/* Background photo */}
-        <img src={bgImage} alt="" crossOrigin="anonymous" style={{
-          position: "absolute", inset: 0,
-          width: "100%", height: "100%", objectFit: "cover",
-          objectPosition: `${bgPositionX ?? 50}% ${bgPositionY ?? 50}%`,
-        }} />
+        {/* Background photo — with pan + zoom */}
+        <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
+          <img src={bgImage} alt="" crossOrigin="anonymous" style={{
+            position: "absolute", inset: 0,
+            width: "100%", height: "100%", objectFit: "cover",
+            objectPosition: `${bgPositionX ?? 50}% ${bgPositionY ?? 50}%`,
+            transform: `scale(${bgZoom ?? 1})`,
+            transformOrigin: `${bgPositionX ?? 50}% ${bgPositionY ?? 50}%`,
+          }} />
+        </div>
 
         {/* Dark teal gradient overlay */}
         <div style={{
