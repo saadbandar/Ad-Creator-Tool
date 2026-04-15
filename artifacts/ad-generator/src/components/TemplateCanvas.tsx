@@ -64,9 +64,9 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
   const platformLogo  = locationType === "teams" ? logoTeams : logoZoom;
   const platformName  = locationType === "teams" ? "Microsoft Teams" : "Zoom";
 
-  const PHOTO_H    = 860;
-  const CURVE_TOP  = 800;
-  const WHITE_TOP  = 870;
+  const PHOTO_H    = 700;
+  const CURVE_TOP  = 640;
+  const WHITE_TOP  = 710;
   const FOOTER_TOP = 1790;
 
   return (
