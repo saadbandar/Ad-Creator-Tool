@@ -2,7 +2,8 @@
    PSAU Event Announcement Template — Portrait 1080×1920
    Layout matches reference: 36adf217-6621-47c2-94ea-1518ac99ca8b
 ─────────────────────────────────────────────────────────────────── */
-import patternImg   from "@assets/image2.png";
+import patternImg        from "@assets/image2.png";
+import patternTransparent from "@assets/pattern_transparent.png";
 import socialBar    from "@assets/image3.png";
 import badgeImg     from "@assets/image5.png";
 import iconClock    from "@assets/image6.png";
@@ -164,10 +165,29 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         backgroundColor: "#ffffff",
         zIndex: 5, overflow: "hidden",
       }}>
-        {/* Pattern watermark */}
-        <img src={patternImg} alt="" crossOrigin="anonymous" style={{
-          position: "absolute", inset: 0, width: "100%", height: "100%",
-          objectFit: "cover", opacity: 0.055, pointerEvents: "none",
+        {/* Pattern overlay — fades from right edge to centre */}
+        <img src={patternTransparent} alt="" crossOrigin="anonymous" style={{
+          position: "absolute",
+          top: 0, right: 0,
+          width: "70%", height: "100%",
+          objectFit: "cover",
+          objectPosition: "right top",
+          opacity: 0.12,
+          pointerEvents: "none",
+          WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)",
+          maskImage:        "linear-gradient(to left, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.5) 40%, transparent 100%)",
+        }} />
+        {/* Mirror on left edge — fades from left to centre */}
+        <img src={patternTransparent} alt="" crossOrigin="anonymous" style={{
+          position: "absolute",
+          top: 0, left: 0,
+          width: "40%", height: "100%",
+          objectFit: "cover",
+          objectPosition: "left top",
+          opacity: 0.07,
+          pointerEvents: "none",
+          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 100%)",
+          maskImage:        "linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 100%)",
         }} />
 
         {/* Content column */}
