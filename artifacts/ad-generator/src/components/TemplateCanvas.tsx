@@ -144,14 +144,53 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       </div>
 
       {/* ══════════════════════════════════════
-          3. SVG WAVE CURVE
+          3. SVG WAVE CURVE + decorative arc
       ══════════════════════════════════════ */}
       <div style={{
         position: "absolute", top: CURVE_TOP, left: 0, right: 0,
-        height: 100, zIndex: 15,
+        height: 120, zIndex: 15,
       }}>
-        <svg viewBox="0 0 1080 100" preserveAspectRatio="none" width="1080" height="100">
-          <path d="M0,100 L0,60 Q540,0 1080,60 L1080,100 Z" fill="#ffffff" />
+        <svg viewBox="0 0 1080 120" preserveAspectRatio="none" width="1080" height="120">
+          <defs>
+            <linearGradient id="arcGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+              <stop offset="0%"   stopColor={TEAL} stopOpacity="0.15" />
+              <stop offset="30%"  stopColor={TEAL} stopOpacity="0.9"  />
+              <stop offset="50%"  stopColor="#ffffff" stopOpacity="1"  />
+              <stop offset="70%"  stopColor={TEAL} stopOpacity="0.9"  />
+              <stop offset="100%" stopColor={TEAL} stopOpacity="0.15" />
+            </linearGradient>
+          </defs>
+
+          {/* White filled background wave */}
+          <path d="M0,120 L0,70 Q540,5 1080,70 L1080,120 Z" fill="#ffffff" />
+
+          {/* Decorative teal arc stroke */}
+          <path
+            d="M0,70 Q540,5 1080,70"
+            fill="none"
+            stroke="url(#arcGrad)"
+            strokeWidth="3.5"
+            strokeLinecap="round"
+          />
+
+          {/* Central diamond ornament at arc peak */}
+          <g transform="translate(540, 10)">
+            <polygon
+              points="0,-11 8,0 0,11 -8,0"
+              fill={TEAL}
+              opacity="0.85"
+            />
+            <polygon
+              points="0,-6 4,0 0,6 -4,0"
+              fill="#ffffff"
+            />
+          </g>
+
+          {/* Side dots */}
+          <circle cx="190" cy="54"  r="5" fill={TEAL} opacity="0.45" />
+          <circle cx="890" cy="54"  r="5" fill={TEAL} opacity="0.45" />
+          <circle cx="100" cy="63"  r="3" fill={TEAL} opacity="0.25" />
+          <circle cx="980" cy="63"  r="3" fill={TEAL} opacity="0.25" />
         </svg>
       </div>
 
