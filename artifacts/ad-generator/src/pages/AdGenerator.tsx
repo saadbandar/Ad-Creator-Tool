@@ -391,7 +391,7 @@ export default function AdGenerator() {
                   type="time"
                   value={rawTime}
                   onChange={e => handleTimeChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs text-right focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs text-right focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                   style={{ direction: "ltr", colorScheme: "light" }}
                 />
                 {data.time && rawTime && (
@@ -408,7 +408,7 @@ export default function AdGenerator() {
                   type="date"
                   value={rawDate}
                   onChange={e => handleDateChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
                   style={{ direction: "ltr", colorScheme: "light" }}
                 />
                 {data.date && rawDate && (
