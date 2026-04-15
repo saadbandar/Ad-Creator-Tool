@@ -113,7 +113,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           bottom: 148,
           left: 0, right: 0,
           padding: "0 64px",
-          textAlign: "right",
+          textAlign: "center",
           zIndex: 5,
         }}>
           <span style={{
