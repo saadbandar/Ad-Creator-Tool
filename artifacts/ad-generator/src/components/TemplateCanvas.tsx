@@ -303,8 +303,16 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         direction: "ltr",
         gap: 24,
       }}>
-        <img src={badgeImg} alt="" crossOrigin="anonymous"
-          style={{ height: 110, objectFit: "contain", flexShrink: 0 }} />
+        <span style={{
+          color: "#ffffff",
+          fontSize: 32,
+          fontWeight: 700,
+          fontFamily: "inherit",
+          flexShrink: 0,
+          letterSpacing: 0.5,
+        }}>
+          وحدة العلاقات العامة
+        </span>
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
           <img src={socialBar} alt="" crossOrigin="anonymous"
             style={{ height: 80, objectFit: "contain" }} />
