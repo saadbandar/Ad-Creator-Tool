@@ -280,7 +280,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
 
               {/* Certificate — always last */}
               {hasCertificate && (
-                <InfoRow icon={iconCert} text="وحدة العلاقات العامة" subText={undefined} subLogo={undefined} />
+                <InfoRow icon={iconCert} text="يوجد شهادات حضور" subText={undefined} subLogo={undefined} />
               )}
 
             </div>
