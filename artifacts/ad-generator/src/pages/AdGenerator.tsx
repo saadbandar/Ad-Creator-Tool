@@ -326,8 +326,6 @@ export default function AdGenerator() {
 
           {/* Event info */}
           <Section title="بيانات الفعالية">
-            <Field label="اسم الجهة" value={data.departmentName}
-              onChange={v => set("departmentName", v)} />
             <Field label='ممثلة بـ (اختياري — اتركه فارغاً لإخفائه)' value={data.representedBy ?? ""}
               onChange={v => set("representedBy", v)} />
             <Field label="نوع الفعالية" value={data.eventType}
