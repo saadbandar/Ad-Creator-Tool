@@ -383,7 +383,7 @@ export default function AdGenerator() {
 
           {/* Date & Time */}
           <Section title="التاريخ والوقت">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-3">
               {/* ── Time picker ── */}
               <div className="space-y-1">
                 <p className="text-xs text-muted-foreground font-medium">الساعة</p>
