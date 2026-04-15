@@ -19,6 +19,7 @@ const DEFAULT_DATA: EventAdData = {
   bgPositionX: 50,
   bgPositionY: 50,
   departmentName: "النص هنا (اسم الجهة)",
+  representedBy: "",
   eventType: "النص هنا (نوع الفعالية: دورة، محاضرة، ورشة عمل، ...)",
   eventTitle: "النص هنا (عنوان الفعالية)",
   time: "التـوقيـت",
@@ -327,6 +328,8 @@ export default function AdGenerator() {
           <Section title="بيانات الفعالية">
             <Field label="اسم الجهة" value={data.departmentName}
               onChange={v => set("departmentName", v)} />
+            <Field label='ممثلة بـ (اختياري — اتركه فارغاً لإخفائه)' value={data.representedBy ?? ""}
+              onChange={v => set("representedBy", v)} />
             <Field label="نوع الفعالية" value={data.eventType}
               onChange={v => set("eventType", v)} multiline />
             <Field label="عنوان الفعالية" value={data.eventTitle}

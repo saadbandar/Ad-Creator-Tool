@@ -25,6 +25,7 @@ export interface EventAdData {
   bgPositionX: number;
   bgPositionY: number;
   departmentName: string;
+  representedBy?: string;
   eventType: string;
   eventTitle: string;
   time: string;
@@ -58,7 +59,7 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
 export function EventAdCanvas({ data }: { data: EventAdData }) {
   const {
     bgImage, bgPositionX, bgPositionY,
-    departmentName, eventType, eventTitle,
+    departmentName, representedBy, eventType, eventTitle,
     time, day, date,
     locationType, venue,
     hasCertificate, qrCodeImage,
@@ -222,6 +223,11 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             <p style={{ color: DEEP_GREEN, fontSize: 40, fontWeight: 700, margin: 0, lineHeight: 1.65 }}>
               تدعوكم كلية إدارة الأعمال بحوطة بني تميم
             </p>
+            {representedBy && (
+              <p style={{ color: DARK_TEAL, fontSize: 34, fontWeight: 600, margin: 0, lineHeight: 1.5 }}>
+                ممثلة بـ {representedBy}
+              </p>
+            )}
             <p style={{ color: "#1a1a1a", fontSize: 37, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
               لحضـور {eventType}
             </p>
