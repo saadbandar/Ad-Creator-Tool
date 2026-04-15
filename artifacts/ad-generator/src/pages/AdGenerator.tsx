@@ -316,7 +316,6 @@ export default function AdGenerator() {
           </div>
           <div>
             <h1 className="text-base font-bold leading-tight">مولّد إعلانات الفعاليات</h1>
-            <p className="text-xs opacity-70">جامعة الأمير سطام بن عبدالعزيز</p>
           </div>
         </div>
       </header>
