@@ -1,7 +1,7 @@
 /* ─────────────────────────────────────────────────────────────────
    PSAU Event Announcement Template — Portrait 1080×1920
-   Layout matches reference image: IMG_8188_1776174513716.png
-───────────────────────────────────────────────────────────────── */
+   Layout matches reference: 36adf217-6621-47c2-94ea-1518ac99ca8b
+─────────────────────────────────────────────────────────────────── */
 import patternImg   from "@assets/image2.png";
 import socialBar    from "@assets/image3.png";
 import badgeImg     from "@assets/image5.png";
@@ -32,12 +32,10 @@ export interface EventAdData {
   qrCodeImage?: string;
 }
 
-/* ── Brand colours ── */
 const TEAL       = "#5ab8b0";
 const DARK_TEAL  = "#3c7974";
 const DEEP_GREEN = "#0e3020";
 
-/* ── 6 presets matching PPTX slides ── */
 export interface TemplatePreset {
   id: number;
   label: string;
@@ -53,9 +51,6 @@ export const TEMPLATE_PRESETS: TemplatePreset[] = [
   { id: 6, label: "Zoom — بدون شهادة",    locationType: "zoom",      hasCertificate: false },
 ];
 
-/* ═══════════════════════════════════════════════════════════════
-   Main canvas — matches the reference image layout
-═══════════════════════════════════════════════════════════════ */
 export function EventAdCanvas({ data }: { data: EventAdData }) {
   const {
     bgImage,
@@ -65,13 +60,14 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
     hasCertificate, qrCodeImage,
   } = data;
 
-  const isOnline = locationType !== "in-person";
+  const isOnline      = locationType !== "in-person";
+  const platformLogo  = locationType === "teams" ? logoTeams : logoZoom;
+  const platformName  = locationType === "teams" ? "Microsoft Teams" : "Zoom";
 
-  /* ── vertical breakpoints (px at 1080×1920) ── */
-  const PHOTO_H    = 860;   /* height of the photo/dark section          */
-  const CURVE_TOP  = 800;   /* where the white curve SVG starts          */
-  const WHITE_TOP  = 870;   /* start of white content area               */
-  const FOOTER_TOP = 1790;  /* start of dark footer                      */
+  const PHOTO_H    = 860;
+  const CURVE_TOP  = 800;
+  const WHITE_TOP  = 870;
+  const FOOTER_TOP = 1790;
 
   return (
     <div style={{
@@ -82,29 +78,54 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       direction: "rtl",
     }}>
 
-      {/* ════════════════════════════════════
-          1. PHOTO + DARK TEAL OVERLAY
-      ════════════════════════════════════ */}
+      {/* ══════════════════════════════════════
+          1. PHOTO SECTION + DARK TEAL OVERLAY
+      ══════════════════════════════════════ */}
       <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: PHOTO_H }}>
-        <img src={bgImage} alt="" crossOrigin="anonymous"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }} />
+
+        {/* Background photo */}
+        <img src={bgImage} alt="" crossOrigin="anonymous" style={{
+          position: "absolute", inset: 0,
+          width: "100%", height: "100%", objectFit: "cover",
+        }} />
+
+        {/* Dark teal gradient overlay */}
         <div style={{
           position: "absolute", inset: 0,
           background: `linear-gradient(170deg,
-            ${DEEP_GREEN}e6 0%,
-            ${DARK_TEAL}d0 45%,
-            ${DARK_TEAL}bb 80%,
-            ${DARK_TEAL}90 100%)`,
+            ${DEEP_GREEN}e8 0%,
+            ${DARK_TEAL}d4 45%,
+            ${DARK_TEAL}c0 80%,
+            ${DARK_TEAL}95 100%)`,
         }} />
+
+        {/* ── "دعـوة" — large white text over the photo, near the bottom ── */}
+        <div style={{
+          position: "absolute",
+          bottom: 148,
+          left: 0, right: 0,
+          padding: "0 64px",
+          textAlign: "right",
+          zIndex: 5,
+        }}>
+          <span style={{
+            color: "#ffffff",
+            fontSize: 110,
+            fontWeight: 900,
+            lineHeight: 1,
+            letterSpacing: "0.06em",
+            display: "block",
+          }}>
+            دعـــوة
+          </span>
+        </div>
       </div>
 
-      {/* ════════════════════════════════════
+      {/* ══════════════════════════════════════
           2. UNIVERSITY LOGO — top right
-             (shows Arabic + English as part of image)
-      ════════════════════════════════════ */}
+      ══════════════════════════════════════ */}
       <div style={{
-        position: "absolute", top: 32, right: 36,
-        zIndex: 20,
+        position: "absolute", top: 32, right: 36, zIndex: 20,
         backgroundColor: "rgba(255,255,255,0.15)",
         borderRadius: 14,
         padding: "8px 14px",
@@ -113,9 +134,9 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           style={{ width: 230, display: "block", mixBlendMode: "multiply" }} />
       </div>
 
-      {/* ════════════════════════════════════
-          3. SVG WAVE CURVE — transitions photo→white
-      ════════════════════════════════════ */}
+      {/* ══════════════════════════════════════
+          3. SVG WAVE CURVE
+      ══════════════════════════════════════ */}
       <div style={{
         position: "absolute", top: CURVE_TOP, left: 0, right: 0,
         height: 100, zIndex: 15,
@@ -125,9 +146,9 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         </svg>
       </div>
 
-      {/* ════════════════════════════════════
-          4. WHITE SECTION (covers from WHITE_TOP to FOOTER_TOP)
-      ════════════════════════════════════ */}
+      {/* ══════════════════════════════════════
+          4. WHITE SECTION
+      ══════════════════════════════════════ */}
       <div style={{
         position: "absolute",
         top: WHITE_TOP, left: 0, right: 0,
@@ -135,138 +156,137 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         backgroundColor: "#ffffff",
         zIndex: 5, overflow: "hidden",
       }}>
-        {/* Geometric pattern watermark */}
-        <img src={patternImg} alt="" crossOrigin="anonymous"
-          style={{
-            position: "absolute", inset: 0, width: "100%", height: "100%",
-            objectFit: "cover", opacity: 0.055, pointerEvents: "none",
-          }} />
+        {/* Pattern watermark */}
+        <img src={patternImg} alt="" crossOrigin="anonymous" style={{
+          position: "absolute", inset: 0, width: "100%", height: "100%",
+          objectFit: "cover", opacity: 0.055, pointerEvents: "none",
+        }} />
 
-        {/* ── Content column ── */}
+        {/* Content column */}
         <div style={{
           position: "relative", zIndex: 2,
           display: "flex", flexDirection: "column",
-          alignItems: "center",
-          padding: "0 64px",
+          alignItems: "flex-end",
+          padding: "44px 64px 40px 64px",
           height: "100%",
           boxSizing: "border-box",
+          gap: 0,
         }}>
 
-          {/* ── "دعـوة" — in the white area, dark teal, right after curve ── */}
-          <div style={{ paddingTop: 52, textAlign: "center", width: "100%" }}>
-            <span style={{
-              color: DARK_TEAL,
-              fontSize: 82,
-              fontWeight: 900,
-              lineHeight: 1,
-              letterSpacing: "0.08em",
-              display: "block",
-            }}>
-              دعـــوة
-            </span>
-          </div>
-
-          {/* ── University invitation text (restored, right-aligned / RTL) ── */}
+          {/* ── Invitation text — 3 lines, NO quotation marks ── */}
           <div style={{
-            marginTop: 38,
             width: "100%",
             textAlign: "right",
-            display: "flex", flexDirection: "column", gap: 12,
+            display: "flex", flexDirection: "column", gap: 6,
           }}>
-            <p style={{ color: DEEP_GREEN, fontSize: 40, fontWeight: 700, margin: 0, lineHeight: 1.5 }}>
+            <p style={{ color: DEEP_GREEN, fontSize: 40, fontWeight: 700, margin: 0, lineHeight: 1.65 }}>
               تـدعوكم جـامعة الأمير سطام بن عبدالعزيـز
             </p>
-            <p style={{ color: "#333", fontSize: 36, fontWeight: 400, margin: 0, lineHeight: 1.5 }}>
-              ممثلة بـ "{departmentName}"
+            <p style={{ color: "#1a1a1a", fontSize: 37, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
+              ممثلة بـ {departmentName}
             </p>
-            <p style={{ color: "#333", fontSize: 36, fontWeight: 400, margin: 0, lineHeight: 1.5 }}>
-              لحضور "{eventType}"
+            <p style={{ color: "#1a1a1a", fontSize: 37, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
+              لحضـور {eventType}
             </p>
           </div>
 
-          {/* ── Event title — large teal text with quotation marks, no box ── */}
+          {/* ── Event title — teal, centered, no quotes ── */}
           <div style={{ marginTop: 36, width: "100%", textAlign: "center" }}>
             <p style={{
-              color: DARK_TEAL,
-              fontSize: 68,
+              color: TEAL,
+              fontSize: 64,
               fontWeight: 900,
-              lineHeight: 1.35,
+              lineHeight: 1.45,
               margin: 0,
             }}>
-              "{eventTitle}"
+              {eventTitle}
             </p>
           </div>
 
-          {/* ── QR code block (online only, if uploaded) ── */}
-          {isOnline && qrCodeImage && (
-            <div style={{
-              marginTop: 32,
-              display: "flex",
-              alignItems: "center",
-              gap: 28,
-              width: "100%",
-              justifyContent: "center",
-            }}>
-              <img src={qrCodeImage} alt="QR" crossOrigin="anonymous"
-                style={{ width: 200, height: 200, objectFit: "contain", borderRadius: 12 }} />
-              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 10 }}>
-                <p style={{ color: DARK_TEAL, fontSize: 28, fontWeight: 700, margin: 0 }}>عن بُعد عبر</p>
-                <img
-                  src={locationType === "teams" ? logoTeams : logoZoom}
-                  alt="" crossOrigin="anonymous"
-                  style={{ height: locationType === "zoom" ? 38 : 48, objectFit: "contain" }}
-                />
-              </div>
-            </div>
-          )}
-
-          {/* ── 4 info cards in a horizontal row ── */}
+          {/* ── INFO CARD — light bg, QR left + info rows right ── */}
           <div style={{
             marginTop: "auto",
-            paddingBottom: 40,
             width: "100%",
+            backgroundColor: "#eaf5f4",
+            borderRadius: 26,
+            padding: "36px 40px",
             display: "flex",
             flexDirection: "row",
-            justifyContent: "space-around",
-            alignItems: "flex-start",
-            gap: 0,
-            direction: "rtl",
+            alignItems: "center",
+            gap: 32,
+            direction: "ltr",
+            boxSizing: "border-box",
           }}>
-            {/* Card: اليوم / التاريخ */}
-            <IconCard icon={iconCalendar} label="اليوم" value={`${day}\n${date}`} />
 
-            {/* Card: الساعة / التوقيت */}
-            <IconCard icon={iconClock} label="الساعة" value={time} />
-
-            {/* Card: location — either venue or platform */}
-            {isOnline && !qrCodeImage ? (
-              /* Online without QR: show platform in location slot */
+            {/* QR CODE — left side (always shown for online) */}
+            {isOnline && (
               <div style={{
-                display: "flex", flexDirection: "column", alignItems: "center", gap: 10,
-                flex: 1, textAlign: "center",
+                flexShrink: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: 220,
+                height: 220,
+                backgroundColor: "#fff",
+                borderRadius: 16,
+                padding: 8,
               }}>
-                <img
-                  src={locationType === "teams" ? logoTeams : logoZoom}
-                  alt="" crossOrigin="anonymous"
-                  style={{ height: 56, objectFit: "contain" }}
-                />
-                <p style={{ color: "#555", fontSize: 22, margin: 0 }}>عن بُعد</p>
+                {qrCodeImage ? (
+                  <img src={qrCodeImage} alt="QR" crossOrigin="anonymous"
+                    style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8 }} />
+                ) : (
+                  <div style={{
+                    width: "100%", height: "100%",
+                    border: `3px dashed ${TEAL}`,
+                    borderRadius: 10,
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                  }}>
+                    <span style={{ color: TEAL, fontSize: 22, textAlign: "center", fontWeight: 600 }}>QR</span>
+                  </div>
+                )}
               </div>
-            ) : (
-              <IconCard icon={iconLocation} label="المكان" value={isOnline ? "عن بُعد" : venue} />
             )}
 
-            {/* Card: certificate — only when hasCertificate */}
-            {hasCertificate && (
-              <IconCard icon={iconCert} label="يوجد" value={"شهادات\nحضور"} />
-            )}
+            {/* INFO ROWS — right side */}
+            <div style={{
+              flex: 1,
+              display: "flex", flexDirection: "column",
+              gap: 22,
+              direction: "rtl",
+            }}>
+
+              {/* Time */}
+              <InfoRow icon={iconClock} text={time} subText={undefined} subLogo={undefined} />
+
+              {/* Day + Date */}
+              <InfoRow icon={iconCalendar} text={`${day}  ${date}`} subText={undefined} subLogo={undefined} />
+
+              {/* Certificate */}
+              {hasCertificate && (
+                <InfoRow icon={iconCert} text="يوجد شهادات حضور" subText={undefined} subLogo={undefined} />
+              )}
+
+              {/* Location */}
+              {isOnline ? (
+                <InfoRow
+                  icon={iconLocation}
+                  text="عن بُعد"
+                  subText={platformName}
+                  subLogo={platformLogo}
+                />
+              ) : (
+                <InfoRow icon={iconLocation} text={venue} subText={undefined} subLogo={undefined} />
+              )}
+
+            </div>
           </div>
+
         </div>
       </div>
 
-      {/* ════════════════════════════════════
+      {/* ══════════════════════════════════════
           5. FOOTER — dark teal bar
-      ════════════════════════════════════ */}
+      ══════════════════════════════════════ */}
       <div style={{
         position: "absolute",
         top: FOOTER_TOP, left: 0, right: 0, bottom: 0,
@@ -278,39 +298,50 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         direction: "ltr",
         gap: 24,
       }}>
-        {/* NCAAA badge — LEFT */}
         <img src={badgeImg} alt="" crossOrigin="anonymous"
           style={{ height: 110, objectFit: "contain", flexShrink: 0 }} />
-        {/* Social media bar — fills remaining space */}
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
           <img src={socialBar} alt="" crossOrigin="anonymous"
             style={{ height: 80, objectFit: "contain" }} />
         </div>
       </div>
+
     </div>
   );
 }
 
-/* ── Borderless icon card: icon (top) → label → value ── */
-function IconCard({ icon, label, value }: { icon: string; label: string; value: string }) {
-  const lines = value.split("\n");
+/* ── Single info row: icon (RTL start) + main text + optional sub-text/logo ── */
+function InfoRow({
+  icon, text, subText, subLogo,
+}: {
+  icon: string;
+  text: string;
+  subText: string | undefined;
+  subLogo: string | undefined;
+}) {
   return (
     <div style={{
-      flex: 1,
-      display: "flex", flexDirection: "column",
+      display: "flex", flexDirection: "row",
       alignItems: "center",
-      gap: 10,
-      textAlign: "center",
-      padding: "0 8px",
+      gap: 16,
+      direction: "rtl",
     }}>
       <img src={icon} alt="" crossOrigin="anonymous"
-        style={{ width: 72, height: 72, objectFit: "contain" }} />
-      <p style={{ color: "#777", fontSize: 22, margin: 0, lineHeight: 1.3 }}>{label}</p>
-      {lines.map((line, i) => (
-        <p key={i} style={{ color: DEEP_GREEN, fontSize: 24, fontWeight: 700, margin: 0, lineHeight: 1.3 }}>
-          {line}
-        </p>
-      ))}
+        style={{ width: 46, height: 46, objectFit: "contain", flexShrink: 0 }} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+        <span style={{ color: DEEP_GREEN, fontSize: 30, fontWeight: 700, lineHeight: 1.25 }}>
+          {text}
+        </span>
+        {subText && (
+          <span style={{ color: "#444", fontSize: 26, fontWeight: 500, lineHeight: 1.25 }}>
+            {subText}
+          </span>
+        )}
+        {subLogo && (
+          <img src={subLogo} alt="" crossOrigin="anonymous"
+            style={{ height: 28, objectFit: "contain", alignSelf: "flex-start", marginTop: 2 }} />
+        )}
+      </div>
     </div>
   );
 }
