@@ -2,6 +2,8 @@ import { useState, useRef, useCallback, useId, useEffect, type PointerEvent } fr
 import html2canvas from "html2canvas";
 import defaultBg from "@assets/image1.png";
 import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
+import logoTeams from "@assets/image10.png";
+import logoZoom  from "@assets/image11.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -340,8 +342,8 @@ export default function AdGenerator() {
             {/* Image pan control — shown after upload */}
             {data.bgImage !== defaultBg && (
               <div className="mt-3 space-y-2">
-                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                  <span>🖐️</span> اسحب لاختيار الجزء المرئي من الصورة
+                <p className="text-xs text-muted-foreground font-medium">
+                  اسحب لاختيار الجزء المرئي من الصورة
                 </p>
                 <ImagePanControl
                   src={data.bgImage}
@@ -412,20 +414,23 @@ export default function AdGenerator() {
           <Section title="طريقة الحضور">
             <div className="grid grid-cols-3 gap-2">
               {([
-                { id: "in-person", label: "حضوري", icon: "📍" },
-                { id: "teams",     label: "Teams",  icon: "💻" },
-                { id: "zoom",      label: "Zoom",   icon: "🎥" },
-              ] as { id: LocationType; label: string; icon: string }[]).map(opt => (
+                { id: "in-person", label: "حضوري",  logo: null },
+                { id: "teams",     label: "Teams",   logo: logoTeams },
+                { id: "zoom",      label: "Zoom",    logo: logoZoom  },
+              ] as { id: LocationType; label: string; logo: string | null }[]).map(opt => (
                 <button
                   key={opt.id}
                   onClick={() => set("locationType", opt.id)}
-                  className={`rounded-lg p-3 border-2 transition-all text-sm font-medium flex flex-col items-center gap-1 ${
+                  className={`rounded-lg p-3 border-2 transition-all text-sm font-medium flex flex-col items-center gap-1.5 ${
                     data.locationType === opt.id
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border hover:border-primary/40"
                   }`}
                 >
-                  <span className="text-xl">{opt.icon}</span>
+                  {opt.logo
+                    ? <img src={opt.logo} alt={opt.label} className="h-7 w-auto object-contain" />
+                    : <span className="text-2xl leading-none">📍</span>
+                  }
                   <span>{opt.label}</span>
                 </button>
               ))}
