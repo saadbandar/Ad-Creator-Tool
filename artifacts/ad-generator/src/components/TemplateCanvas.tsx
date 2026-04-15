@@ -378,13 +378,13 @@ function InfoRow({
       direction: "rtl",
     }}>
       <img src={icon} alt="" crossOrigin="anonymous"
-        style={{ width: 46, height: 46, objectFit: "contain", flexShrink: 0 }} />
+        style={{ width: 58, height: 58, objectFit: "contain", flexShrink: 0 }} />
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-        <span style={{ color: DEEP_GREEN, fontSize: 30, fontWeight: 700, lineHeight: 1.25 }}>
+        <span style={{ color: DEEP_GREEN, fontSize: 38, fontWeight: 700, lineHeight: 1.25 }}>
           {text}
         </span>
         {subText && (
-          <span style={{ color: "#444", fontSize: 26, fontWeight: 500, lineHeight: 1.25 }}>
+          <span style={{ color: "#444", fontSize: 33, fontWeight: 500, lineHeight: 1.25 }}>
             {subText}
           </span>
         )}
