@@ -481,7 +481,6 @@ export default function AdGenerator() {
               <span className="font-medium">
                 {data.hasCertificate ? "✓ يوجد شهادات حضور" : "لا يوجد شهادات حضور"}
               </span>
-              <span className="text-2xl">{data.hasCertificate ? "🎓" : "—"}</span>
             </button>
           </Section>
 
