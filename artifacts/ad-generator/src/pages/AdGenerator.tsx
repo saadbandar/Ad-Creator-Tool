@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useId, useEffect, type PointerEvent } from "react";
+import QRCodeLib from "qrcode";
 import html2canvas from "html2canvas";
 import defaultBg from "@assets/DJI_0449_1776326627177.jpg";
 import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
@@ -215,6 +216,18 @@ export default function AdGenerator() {
   const exportRef  = useRef<HTMLDivElement>(null);
   const bgInputId  = useId();
   const qrInputId  = useId();
+  const [qrUrl, setQrUrl] = useState("");
+
+  const generateQrFromUrl = useCallback(async (url: string) => {
+    if (!url.trim()) return;
+    try {
+      const dataUrl = await QRCodeLib.toDataURL(url.trim(), {
+        width: 400, margin: 1,
+        color: { dark: "#0e3020", light: "#ffffff" },
+      });
+      set("qrCodeImage", dataUrl);
+    } catch (_) {}
+  }, []);
 
   const activeW = orientation === "portrait" ? CANVAS_W   : CANVAS_W_L;
   const activeH = orientation === "portrait" ? CANVAS_H   : CANVAS_H_L;
@@ -453,23 +466,48 @@ export default function AdGenerator() {
               </div>
             )}
 
-            {/* Online: QR code upload */}
+            {/* Online: QR code — URL input + upload */}
             {isOnline && (
               <div className="mt-3 space-y-2">
+                {/* URL → QR */}
+                <div className="flex gap-2 items-center">
+                  <div className="relative flex-1">
+                    <QrCode className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                    <Input
+                      dir="ltr"
+                      placeholder="الصق الرابط هنا لتوليد QR تلقائياً…"
+                      value={qrUrl}
+                      className="pr-8 text-xs placeholder:text-right"
+                      onChange={e => {
+                        const v = e.target.value;
+                        setQrUrl(v);
+                        generateQrFromUrl(v);
+                      }}
+                    />
+                  </div>
+                  {qrUrl && (
+                    <button
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                      onClick={() => { setQrUrl(""); set("qrCodeImage", undefined); }}
+                    >✕</button>
+                  )}
+                </div>
+
+                {/* — or upload — */}
                 <label htmlFor={qrInputId}
-                  className="flex items-center gap-2 border-2 border-dashed border-primary/40 rounded-lg p-3 cursor-pointer hover:border-primary/70 hover:bg-primary/5 transition-all">
-                  <QrCode className="h-5 w-5 text-primary/60 shrink-0" />
+                  className="flex items-center gap-2 border border-dashed border-primary/30 rounded-lg px-3 py-2 cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all">
                   <span className="text-xs text-muted-foreground">
-                    {data.qrCodeImage
+                    {data.qrCodeImage && !qrUrl
                       ? <span className="text-primary font-medium">✓ تم رفع الباركود — اضغط للتغيير</span>
-                      : <><span className="text-primary font-medium">ارفع صورة الباركود (QR)</span><br />لرابط الانضمام</>
+                      : <span>أو ارفع صورة QR جاهزة</span>
                     }
                   </span>
                   <input id={qrInputId} data-testid="input-qr" type="file" accept="image/*"
-                    className="hidden" onChange={handleQrUpload} />
+                    className="hidden" onChange={e => { setQrUrl(""); handleQrUpload(e); }} />
                 </label>
+
                 {data.qrCodeImage && (
-                  <button onClick={() => set("qrCodeImage", undefined)}
+                  <button onClick={() => { set("qrCodeImage", undefined); setQrUrl(""); }}
                     className="text-xs text-muted-foreground hover:text-foreground transition-colors">
                     ✕ إزالة الباركود
                   </button>
