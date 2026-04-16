@@ -261,13 +261,13 @@ export default function AdGenerator() {
     set("time", formatted);
   };
 
-  /* ── Date picker: "YYYY-MM-DD" → day name + formatted date ── */
+  /* ── Date picker: "YYYY-MM-DD" → day name + Hijri formatted date ── */
   const handleDateChange = (raw: string) => {
     setRawDate(raw);
     if (!raw) return;
     const d = new Date(raw + "T12:00:00"); // noon avoids timezone flips
     const dayName = new Intl.DateTimeFormat("ar-SA", { weekday: "long" }).format(d);
-    const dateStr = new Intl.DateTimeFormat("ar-SA", {
+    const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
       day: "numeric", month: "long", year: "numeric",
     }).format(d);
     set("day",  dayName);
