@@ -37,6 +37,7 @@ export interface EventAdData {
   venue: string;
   hasCertificate: boolean;
   qrCodeImage?: string;
+  adMode: "invitation" | "announcement";
 }
 
 const TEAL       = "#5ab8b0";
@@ -64,8 +65,10 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
     departmentName, representedBy, eventType, eventTitle,
     time, day, date,
     locationType, venue,
-    hasCertificate, qrCodeImage,
+    hasCertificate, qrCodeImage, adMode,
   } = data;
+
+  const isAnnouncement = adMode === "announcement";
 
   const isOnline      = locationType !== "in-person";
   const platformLogo  = locationType === "teams" ? logoTeams : logoZoom;
@@ -155,7 +158,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             lineHeight: 1,
             display: "block",
           }}>
-            دعوة
+            {isAnnouncement ? "إعلان" : "دعوة"}
           </span>
         </div>
       </div>
@@ -247,7 +250,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             display: "flex", flexDirection: "column", gap: 6,
           }}>
             <p style={{ color: DEEP_GREEN, fontSize: 44, fontWeight: 700, margin: 0, lineHeight: 1.65 }}>
-              تدعوكم كلية إدارة الأعمال بحوطة بني تميم
+              {isAnnouncement ? "تعلن" : "تدعوكم"} كلية إدارة الأعمال بحوطة بني تميم
             </p>
             {representedBy && (
               <p style={{ color: DARK_TEAL, fontSize: 46, fontWeight: 600, margin: 0, lineHeight: 1.5 }}>

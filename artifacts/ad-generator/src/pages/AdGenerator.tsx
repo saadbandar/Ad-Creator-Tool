@@ -37,6 +37,7 @@ const DEFAULT_DATA: EventAdData = {
   venue: "الـوصـف",
   hasCertificate: false,
   qrCodeImage: undefined,
+  adMode: "invitation",
 };
 
 type ExportFormat = "webp" | "png" | "jpeg";
@@ -382,6 +383,27 @@ export default function AdGenerator() {
                 </button>
               </div>
             )}
+          </Section>
+
+          {/* Ad mode toggle */}
+          <Section title="نوع البطاقة">
+            <div className="flex gap-2">
+              {([
+                { id: "invitation",   label: "دعوة"   },
+                { id: "announcement", label: "إعلان"  },
+              ] as const).map(opt => (
+                <button key={opt.id}
+                  onClick={() => set("adMode", opt.id)}
+                  className={`flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
+                    data.adMode === opt.id
+                      ? "bg-primary text-primary-foreground border-primary"
+                      : "bg-background text-foreground border-border hover:border-primary/50"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
           </Section>
 
           {/* Event info */}

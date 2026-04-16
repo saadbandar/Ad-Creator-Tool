@@ -34,9 +34,10 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
     representedBy, eventType, eventTitle,
     time, day, date,
     locationType, venue,
-    hasCertificate, qrCodeImage,
+    hasCertificate, qrCodeImage, adMode,
   } = data;
 
+  const isAnnouncement = adMode === "announcement";
   const isOnline     = locationType !== "in-person";
   const platformLogo = locationType === "teams" ? logoTeams : logoZoom;
   const platformName = locationType === "teams" ? "Microsoft Teams" : "Zoom";
@@ -181,7 +182,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
               lineHeight: 1,
               display: "block",
             }}>
-              دعوة
+              {isAnnouncement ? "إعلان" : "دعوة"}
             </span>
           </div>
 
@@ -191,7 +192,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
             display: "flex", flexDirection: "column", gap: 6,
           }}>
             <p style={{ color: DEEP_GREEN, fontSize: 38, fontWeight: 700, margin: 0, lineHeight: 1.55 }}>
-              تدعوكم كلية إدارة الأعمال بحوطة بني تميم
+              {isAnnouncement ? "تعلن" : "تدعوكم"} كلية إدارة الأعمال بحوطة بني تميم
             </p>
             {representedBy && (
               <p style={{ color: DARK_TEAL, fontSize: 40, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
