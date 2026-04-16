@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useId, useEffect, type PointerEvent } from "react";
 import html2canvas from "html2canvas";
-import defaultBg from "@assets/image1.png";
+import defaultBg from "@assets/DJI_0449_1776326627177.jpg";
 import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
 import logoTeams from "@assets/image10.png";
 import logoZoom  from "@assets/image11.png";
