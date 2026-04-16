@@ -147,7 +147,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
           position: "relative", zIndex: 2,
           display: "flex", flexDirection: "column",
           alignItems: "flex-end",
-          padding: "40px 60px 32px 44px",
+          padding: "75px 60px 32px 44px",
           height: "100%", boxSizing: "border-box",
         }}>
 
@@ -169,15 +169,15 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
             width: "100%", textAlign: "center",
             display: "flex", flexDirection: "column", gap: 6,
           }}>
-            <p style={{ color: DEEP_GREEN, fontSize: 34, fontWeight: 700, margin: 0, lineHeight: 1.55 }}>
+            <p style={{ color: DEEP_GREEN, fontSize: 38, fontWeight: 700, margin: 0, lineHeight: 1.55 }}>
               تدعوكم كلية إدارة الأعمال بحوطة بني تميم
             </p>
             {representedBy && (
-              <p style={{ color: DARK_TEAL, fontSize: 36, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
+              <p style={{ color: DARK_TEAL, fontSize: 40, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
                 ممثلة بـ {representedBy}
               </p>
             )}
-            <p style={{ color: "#1a1a1a", fontSize: 38, fontWeight: 500, margin: 0, lineHeight: 1.55 }}>
+            <p style={{ color: "#1a1a1a", fontSize: 44, fontWeight: 500, margin: 0, lineHeight: 1.55 }}>
               لحضـور {eventType}
             </p>
           </div>
