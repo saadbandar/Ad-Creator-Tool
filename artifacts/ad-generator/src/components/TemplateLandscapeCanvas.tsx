@@ -2,6 +2,7 @@
    PSAU Event Announcement Template — Landscape 1920×1080
    Mirror of the portrait template, rotated to horizontal layout.
 ─────────────────────────────────────────────────────────────────── */
+import { useState, useEffect } from "react";
 import patternImg         from "@assets/image2.png";
 import patternTransparent from "@assets/pattern_transparent.png";
 import socialBar          from "@assets/image3.png";
@@ -39,6 +40,26 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
   const isOnline     = locationType !== "in-person";
   const platformLogo = locationType === "teams" ? logoTeams : logoZoom;
   const platformName = locationType === "teams" ? "Microsoft Teams" : "Zoom";
+
+  /* Pre-convert social bar to white so CSS filter isn't needed during export */
+  const [whiteSocial, setWhiteSocial] = useState(socialBar);
+  useEffect(() => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const cv = document.createElement("canvas");
+      cv.width = img.naturalWidth; cv.height = img.naturalHeight;
+      const ctx = cv.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+      const id = ctx.getImageData(0, 0, cv.width, cv.height);
+      for (let i = 0; i < id.data.length; i += 4) {
+        if (id.data[i + 3] > 0) { id.data[i] = 255; id.data[i+1] = 255; id.data[i+2] = 255; }
+      }
+      ctx.putImageData(id, 0, 0);
+      setWhiteSocial(cv.toDataURL());
+    };
+    img.src = socialBar;
+  }, []);
 
   return (
     <div style={{
@@ -257,13 +278,13 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
       }}>
         <span style={{
           color: "#ffffff", fontSize: 28, fontWeight: 700,
-          flexShrink: 0, letterSpacing: 0.4,
+          flexShrink: 0, letterSpacing: 0,
         }}>
           وحدة العلاقات العامة
         </span>
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
-          <img src={socialBar} alt="" crossOrigin="anonymous"
-            style={{ height: 68, objectFit: "contain", filter: "brightness(0) invert(1)" }} />
+          <img src={whiteSocial} alt="" crossOrigin="anonymous"
+            style={{ height: 68, objectFit: "contain" }} />
         </div>
       </div>
 
