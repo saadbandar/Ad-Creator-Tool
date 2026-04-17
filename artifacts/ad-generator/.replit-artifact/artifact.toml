@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "مولّد الإعلانات - جامعة الأمير سطام"
+title = "مولّد الإعلانات"
 version = "1.0.0"
 id = "artifacts/ad-generator"
 router = "path"
