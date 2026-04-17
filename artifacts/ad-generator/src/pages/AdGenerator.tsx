@@ -305,7 +305,7 @@ export default function AdGenerator() {
       });
       el.style.visibility = "hidden";
       const link = document.createElement("a");
-      link.download = `إعلان-فعالية-جامعة-سطام.${fmt.ext}`;
+      link.download = `إعلان-فعالية.${fmt.ext}`;
       link.href = canvas.toDataURL(fmt.mime, fmt.quality);
       link.click();
     } catch (err) {
