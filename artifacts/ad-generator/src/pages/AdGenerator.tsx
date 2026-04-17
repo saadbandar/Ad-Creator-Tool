@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useId, useEffect, type PointerEvent } from "react";
 import QRCodeLib from "qrcode";
 import html2canvas from "html2canvas";
+import { jsPDF } from "jspdf";
 import defaultBg from "@assets/DJI_0449_1776326627177.jpg";
 import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
 import logoTeams from "@assets/image10.png";
@@ -41,7 +42,7 @@ const DEFAULT_DATA: EventAdData = {
   adMode: "invitation",
 };
 
-type ExportFormat = "webp" | "png" | "jpeg";
+type ExportFormat = "pdf" | "png" | "jpeg";
 
 interface FormatOption {
   id: ExportFormat;
@@ -53,11 +54,11 @@ interface FormatOption {
 }
 
 const FORMAT_OPTIONS: FormatOption[] = [
-  { id: "webp", mime: "image/webp", ext: "webp", label: "WebP", quality: 0.95,
-    hint: "أفضل جودة وأصغر حجم — موصى به" },
-  { id: "png",  mime: "image/png",  ext: "png",  label: "PNG",  quality: 1,
+  { id: "pdf",  mime: "application/pdf", ext: "pdf",  label: "PDF",  quality: 1,
+    hint: "ملف PDF جاهز للطباعة" },
+  { id: "png",  mime: "image/png",       ext: "png",  label: "PNG",  quality: 1,
     hint: "جودة لا تُفقد — حجم أكبر" },
-  { id: "jpeg", mime: "image/jpeg", ext: "jpg",  label: "JPEG", quality: 0.92,
+  { id: "jpeg", mime: "image/jpeg",      ext: "jpg",  label: "JPEG", quality: 0.92,
     hint: "أصغر حجم — مناسب للمشاركة السريعة" },
 ];
 
@@ -205,7 +206,7 @@ const ImagePanControl = ({
 
 export default function AdGenerator() {
   const [data, setData] = useState<EventAdData>({ ...DEFAULT_DATA });
-  const [exportFormat, setExportFormat] = useState<ExportFormat>("webp");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("jpeg");
   const [isExporting, setIsExporting] = useState(false);
 
   /* Raw picker values (internal) */
@@ -305,10 +306,25 @@ export default function AdGenerator() {
         imageTimeout: 20000,
       });
       el.style.visibility = "hidden";
-      const link = document.createElement("a");
-      link.download = `إعلان-فعالية.${fmt.ext}`;
-      link.href = canvas.toDataURL(fmt.mime, fmt.quality);
-      link.click();
+
+      if (fmt.id === "pdf") {
+        /* Portrait: width < height → jsPDF portrait; Landscape: width > height → jsPDF landscape */
+        const isLandscape = activeW > activeH;
+        const pdf = new jsPDF({
+          orientation: isLandscape ? "landscape" : "portrait",
+          unit: "px",
+          format: [activeW, activeH],
+          hotfixes: ["px_scaling"],
+        });
+        const imgData = canvas.toDataURL("image/jpeg", 0.95);
+        pdf.addImage(imgData, "JPEG", 0, 0, activeW, activeH);
+        pdf.save("إعلان-فعالية.pdf");
+      } else {
+        const link = document.createElement("a");
+        link.download = `إعلان-فعالية.${fmt.ext}`;
+        link.href = canvas.toDataURL(fmt.mime, fmt.quality);
+        link.click();
+      }
     } catch (err) {
       console.error(err);
       if (exportRef.current) exportRef.current.style.visibility = "hidden";
@@ -589,7 +605,7 @@ export default function AdGenerator() {
                 : <Download className="h-4 w-4" />}
               {isExporting
                 ? "جاري التصدير..."
-                : `تحميل الصورة (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
+                : `تحميل ${exportFormat === "pdf" ? "الملف" : "الصورة"} (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
             </Button>
             <Button data-testid="button-reset" variant="outline"
               onClick={() => {
