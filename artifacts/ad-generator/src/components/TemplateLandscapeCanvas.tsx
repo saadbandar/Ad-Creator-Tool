@@ -33,7 +33,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     representedBy, eventType, eventTitle,
     time, day, date,
-    locationType, venue,
+    locationType, venue, meetingUrl,
     hasCertificate, qrCodeImage, adMode,
   } = data;
 
@@ -254,7 +254,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
               <LInfoRow icon={iconClock}    text={time} />
               <LInfoRow icon={iconCalendar} text={`${day}  ${date}`} />
               {isOnline ? (
-                <LInfoRow icon={iconLocation} text="عن بُعد" subText={platformName} subLogo={platformLogo} />
+                <LInfoRow icon={iconLocation} text="عن بُعد" subText={platformName} subLogo={platformLogo} urlText={meetingUrl || undefined} />
               ) : (
                 <LInfoRow icon={iconLocation} text={venue} />
               )}
@@ -294,12 +294,13 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
 }
 
 function LInfoRow({
-  icon, text, subText, subLogo,
+  icon, text, subText, subLogo, urlText,
 }: {
   icon: string;
   text: string;
   subText?: string;
   subLogo?: string;
+  urlText?: string;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, direction: "rtl" }}>
@@ -317,6 +318,14 @@ function LInfoRow({
         {subLogo && (
           <img src={subLogo} alt="" crossOrigin="anonymous"
             style={{ height: 24, objectFit: "contain", alignSelf: "flex-start", marginTop: 2 }} />
+        )}
+        {urlText && (
+          <span style={{
+            color: DARK_TEAL, fontSize: 22, fontWeight: 500, lineHeight: 1.3,
+            wordBreak: "break-all", direction: "ltr", textAlign: "right", marginTop: 3,
+          }}>
+            {urlText}
+          </span>
         )}
       </div>
     </div>

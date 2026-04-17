@@ -35,6 +35,7 @@ const DEFAULT_DATA: EventAdData = {
   date: "التـاريـخ",
   locationType: "in-person",
   venue: "الـوصـف",
+  meetingUrl: "",
   hasCertificate: false,
   qrCodeImage: undefined,
   adMode: "invitation",
@@ -491,18 +492,20 @@ export default function AdGenerator() {
             {/* Online: QR code — URL input + upload */}
             {isOnline && (
               <div className="mt-3 space-y-2">
-                {/* URL → QR */}
+                {/* URL → QR + shown in ad */}
+                <p className="text-xs text-muted-foreground mb-1">رابط الاجتماع (يظهر في الإعلان ويتحول لـ QR تلقائياً)</p>
                 <div className="flex gap-2 items-center">
                   <div className="relative flex-1">
                     <QrCode className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                     <Input
                       dir="ltr"
-                      placeholder="الصق الرابط هنا لتوليد QR تلقائياً…"
+                      placeholder="https://…"
                       value={qrUrl}
                       className="pr-8 text-xs placeholder:text-right"
                       onChange={e => {
                         const v = e.target.value;
                         setQrUrl(v);
+                        set("meetingUrl", v);
                         generateQrFromUrl(v);
                       }}
                     />
@@ -510,7 +513,7 @@ export default function AdGenerator() {
                   {qrUrl && (
                     <button
                       className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
-                      onClick={() => { setQrUrl(""); set("qrCodeImage", undefined); }}
+                      onClick={() => { setQrUrl(""); set("meetingUrl", ""); set("qrCodeImage", undefined); }}
                     >✕</button>
                   )}
                 </div>

@@ -35,6 +35,7 @@ export interface EventAdData {
   date: string;
   locationType: LocationType;
   venue: string;
+  meetingUrl: string;
   hasCertificate: boolean;
   qrCodeImage?: string;
   adMode: "invitation" | "announcement";
@@ -64,7 +65,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     departmentName, representedBy, eventType, eventTitle,
     time, day, date,
-    locationType, venue,
+    locationType, venue, meetingUrl,
     hasCertificate, qrCodeImage, adMode,
   } = data;
 
@@ -340,6 +341,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
                   text="عن بُعد"
                   subText={platformName}
                   subLogo={platformLogo}
+                  urlText={meetingUrl || undefined}
                 />
               ) : (
                 <InfoRow icon={iconLocation} text={venue} subText={undefined} subLogo={undefined} />
@@ -392,12 +394,13 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
 
 /* ── Single info row: icon (RTL start) + main text + optional sub-text/logo ── */
 function InfoRow({
-  icon, text, subText, subLogo,
+  icon, text, subText, subLogo, urlText,
 }: {
   icon: string;
   text: string;
   subText: string | undefined;
   subLogo: string | undefined;
+  urlText?: string;
 }) {
   return (
     <div style={{
@@ -420,6 +423,15 @@ function InfoRow({
         {subLogo && (
           <img src={subLogo} alt="" crossOrigin="anonymous"
             style={{ height: 28, objectFit: "contain", alignSelf: "flex-start", marginTop: 2 }} />
+        )}
+        {urlText && (
+          <span style={{
+            color: DARK_TEAL, fontSize: 28, fontWeight: 500, lineHeight: 1.3,
+            wordBreak: "break-all", direction: "ltr", textAlign: "right",
+            marginTop: 4,
+          }}>
+            {urlText}
+          </span>
         )}
       </div>
     </div>
