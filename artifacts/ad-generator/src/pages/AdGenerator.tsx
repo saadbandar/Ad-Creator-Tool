@@ -427,7 +427,7 @@ export default function AdGenerator() {
           <Section title="بيانات الفعالية">
             <Field label='ممثلة بـ (اختياري — اتركه فارغاً لإخفائه)' value={data.representedBy ?? ""}
               onChange={v => set("representedBy", v)}
-              hint="د. محمد العمري" />
+              hint="وحدة …. / قسم …." />
             <Field label="نوع الفعالية" value={data.eventType}
               onChange={v => set("eventType", v)} multiline
               hint="دورة تدريبية / ورشة عمل / محاضرة علمية" />
@@ -504,8 +504,7 @@ export default function AdGenerator() {
             {/* In-person: venue field */}
             {data.locationType === "in-person" && (
               <div className="mt-3">
-                <Field label="وصف المكان" value={data.venue} onChange={v => set("venue", v)}
-                  hint="قاعة الملك عبدالعزيز — المبنى الرئيسي" />
+                <Field label="وصف المكان" value={data.venue} onChange={v => set("venue", v)} />
               </div>
             )}
 
@@ -718,7 +717,7 @@ function Field({ label, value, onChange, multiline, hint }: {
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
       {hint && (
         <p className="text-[11px] text-primary/70 bg-primary/5 rounded px-2 py-1 leading-relaxed">
-          مثال: {hint}
+          {hint}
         </p>
       )}
       {multiline ? (
