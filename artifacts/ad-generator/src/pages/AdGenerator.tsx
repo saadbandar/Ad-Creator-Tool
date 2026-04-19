@@ -27,15 +27,15 @@ const DEFAULT_DATA: EventAdData = {
   bgPositionX: 50,
   bgPositionY: 50,
   bgZoom: 1,
-  departmentName: "النص هنا (اسم الجهة)",
+  departmentName: "",
   representedBy: "",
-  eventType: "النص هنا (نوع الفعالية: دورة، محاضرة، ورشة عمل، ...)",
-  eventTitle: "النص هنا (عنوان الفعالية)",
-  time: "التـوقيـت",
-  day: "اليـوم",
-  date: "التـاريـخ",
+  eventType: "",
+  eventTitle: "",
+  time: "",
+  day: "",
+  date: "",
   locationType: "in-person",
-  venue: "الـوصـف",
+  venue: "",
   meetingUrl: "",
   hasCertificate: false,
   qrCodeImage: undefined,
@@ -426,11 +426,14 @@ export default function AdGenerator() {
           {/* Event info */}
           <Section title="بيانات الفعالية">
             <Field label='ممثلة بـ (اختياري — اتركه فارغاً لإخفائه)' value={data.representedBy ?? ""}
-              onChange={v => set("representedBy", v)} />
+              onChange={v => set("representedBy", v)}
+              hint="د. محمد العمري" />
             <Field label="نوع الفعالية" value={data.eventType}
-              onChange={v => set("eventType", v)} multiline />
+              onChange={v => set("eventType", v)} multiline
+              hint="دورة تدريبية / ورشة عمل / محاضرة علمية" />
             <Field label="عنوان الفعالية" value={data.eventTitle}
-              onChange={v => set("eventTitle", v)} multiline />
+              onChange={v => set("eventTitle", v)} multiline
+              hint="الذكاء الاصطناعي وتطبيقاته في التعليم" />
           </Section>
 
           {/* Date & Time */}
@@ -501,7 +504,8 @@ export default function AdGenerator() {
             {/* In-person: venue field */}
             {data.locationType === "in-person" && (
               <div className="mt-3">
-                <Field label="وصف المكان" value={data.venue} onChange={v => set("venue", v)} />
+                <Field label="وصف المكان" value={data.venue} onChange={v => set("venue", v)}
+                  hint="قاعة الملك عبدالعزيز — المبنى الرئيسي" />
               </div>
             )}
 
@@ -610,9 +614,9 @@ export default function AdGenerator() {
             <Button data-testid="button-reset" variant="outline"
               onClick={() => {
                 setData({ ...DEFAULT_DATA });
-                setSelectedPreset(1);
                 setRawTime("");
                 setRawDate("");
+                setQrUrl("");
               }}
               className="gap-2">
               <RefreshCw className="h-4 w-4" />
@@ -703,14 +707,20 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-function Field({ label, value, onChange, multiline }: {
+function Field({ label, value, onChange, multiline, hint }: {
   label: string; value: string;
   onChange: (v: string) => void;
   multiline?: boolean;
+  hint?: string;
 }) {
   return (
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
+      {hint && (
+        <p className="text-[11px] text-primary/70 bg-primary/5 rounded px-2 py-1 leading-relaxed">
+          مثال: {hint}
+        </p>
+      )}
       {multiline ? (
         <Textarea value={value}
           onChange={e => {
@@ -719,11 +729,11 @@ function Field({ label, value, onChange, multiline }: {
             t.style.height = "auto";
             t.style.height = t.scrollHeight + "px";
           }}
-          placeholder={label} rows={2}
+          placeholder="اكتب هنا..." rows={2}
           className="text-right text-sm resize-none overflow-hidden" />
       ) : (
         <Input value={value} onChange={e => onChange(e.target.value)}
-          placeholder={label} className="text-right text-sm" />
+          placeholder="اكتب هنا..." className="text-right text-sm" />
       )}
     </div>
   );
