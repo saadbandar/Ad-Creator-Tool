@@ -271,6 +271,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               fontWeight: 900,
               lineHeight: 1.45,
               margin: 0,
+              whiteSpace: "pre-wrap",
             }}>
               {eventTitle}
             </p>

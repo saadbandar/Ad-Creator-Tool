@@ -208,7 +208,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
           <div style={{ marginTop: 22, width: "100%", textAlign: "center" }}>
             <p style={{
               color: TEAL, fontSize: 56, fontWeight: 900,
-              lineHeight: 1.4, margin: 0,
+              lineHeight: 1.4, margin: 0, whiteSpace: "pre-wrap",
             }}>
               {eventTitle}
             </p>
