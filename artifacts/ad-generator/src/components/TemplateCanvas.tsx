@@ -39,6 +39,7 @@ export interface EventAdData {
   hasCertificate: boolean;
   qrCodeImage?: string;
   adMode: "invitation" | "announcement";
+  language?: "ar" | "en";
 }
 
 const TEAL       = "#5ab8b0";
@@ -67,13 +68,26 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
     time, day, date,
     locationType, venue, meetingUrl,
     hasCertificate, qrCodeImage, adMode,
+    language,
   } = data;
 
+  const isEn           = language === "en";
   const isAnnouncement = adMode === "announcement";
+  const isOnline       = locationType !== "in-person";
+  const platformLogo   = locationType === "teams" ? logoTeams : logoZoom;
+  const platformName   = locationType === "teams" ? "Microsoft Teams" : "Zoom";
 
-  const isOnline      = locationType !== "in-person";
-  const platformLogo  = locationType === "teams" ? logoTeams : logoZoom;
-  const platformName  = locationType === "teams" ? "Microsoft Teams" : "Zoom";
+  /* Localised labels */
+  const L = {
+    card:        isAnnouncement ? (isEn ? "Announcement" : "إعلان") : (isEn ? "Invitation" : "دعوة"),
+    verb:        isAnnouncement ? (isEn ? "announces"    : "تعلن")  : (isEn ? "invites you" : "تدعوكم"),
+    college:     isEn ? "College of Business Administration, Huta Bani Tamim" : "كلية إدارة الأعمال بحوطة بني تميم",
+    repBy:       isEn ? "Represented by" : "ممثلة بـ",
+    toAttend:    isEn ? "to attend"      : "لحضـور",
+    online:      isEn ? "Online"         : "عن بُعد",
+    certificate: isEn ? "Attendance Certificate Available" : "يوجد شهادات حضور",
+    footer:      isEn ? "Public Relations Unit" : "وحدة العلاقات العامة",
+  };
 
   /* Pre-convert social bar to white so CSS filter isn't needed during export */
   const [whiteSocial, setWhiteSocial] = useState(socialBar);
@@ -105,8 +119,8 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       width: CANVAS_W, height: CANVAS_H,
       position: "relative", overflow: "hidden",
       backgroundColor: "#ffffff",
-      fontFamily: "'Cairo','Arial',sans-serif",
-      direction: "rtl",
+      fontFamily: isEn ? "'Cairo','Arial',sans-serif" : "'Cairo','Arial',sans-serif",
+      direction: isEn ? "ltr" : "rtl",
     }}>
 
       {/* ══════════════════════════════════════
@@ -143,7 +157,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           mixBlendMode: "overlay",
         }} />
 
-        {/* ── "دعـوة" — large white text over the photo, near the bottom ── */}
+        {/* ── Card type label — large white text over the photo ── */}
         <div style={{
           position: "absolute",
           bottom: 148,
@@ -159,13 +173,13 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             lineHeight: 1,
             display: "block",
           }}>
-            {isAnnouncement ? "إعلان" : "دعوة"}
+            {L.card}
           </span>
         </div>
       </div>
 
       {/* ══════════════════════════════════════
-          2. UNIVERSITY LOGO — top right (white via CSS filter)
+          2. UNIVERSITY LOGO — top (white)
       ══════════════════════════════════════ */}
       <div style={{
         position: "absolute", top: 32, right: 36, zIndex: 20,
@@ -183,7 +197,6 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       }}>
         <svg viewBox="0 0 1080 120" preserveAspectRatio="none" width="1080" height="120">
           <defs>
-            {/* Horizontal gradient — transparent at edges, opaque at center */}
             <linearGradient id="arcFillGrad" x1="0%" y1="0%" x2="100%" y2="0%">
               <stop offset="0%"   stopColor={TEAL} stopOpacity="0"   />
               <stop offset="25%"  stopColor={TEAL} stopOpacity="0.75"/>
@@ -192,21 +205,11 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               <stop offset="100%" stopColor={TEAL} stopOpacity="0"   />
             </linearGradient>
           </defs>
-
-          {/* White filled background wave */}
           <path d="M0,120 L0,72 Q540,8 1080,72 L1080,120 Z" fill="#ffffff" />
-
-          {/*
-            Tapered arc ribbon:
-            Upper edge: Q540,8  (tight / high)
-            Lower edge: Q540,36 (looser / lower)
-            → thick (~20 px) at center, tapers to 0 at both ends
-          */}
           <path
             d="M0,72 Q540,8 1080,72 Q540,36 0,72 Z"
             fill="url(#arcFillGrad)"
           />
-
         </svg>
       </div>
 
@@ -220,7 +223,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         backgroundColor: "#ffffff",
         zIndex: 5, overflow: "hidden",
       }}>
-        {/* Pattern overlay — vertical fade: visible at top, fades to transparent at bottom */}
+        {/* Pattern overlay */}
         <img src={patternTransparent} alt="" crossOrigin="anonymous" style={{
           position: "absolute",
           inset: 0,
@@ -237,33 +240,33 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
         <div style={{
           position: "relative", zIndex: 2,
           display: "flex", flexDirection: "column",
-          alignItems: "flex-end",
+          alignItems: "center",
           padding: "90px 64px 40px 64px",
           height: "100%",
           boxSizing: "border-box",
           gap: 0,
         }}>
 
-          {/* ── Invitation text — 3 lines, NO quotation marks ── */}
+          {/* ── Invitation / announcement text ── */}
           <div style={{
             width: "100%",
             textAlign: "center",
             display: "flex", flexDirection: "column", gap: 6,
           }}>
             <p style={{ color: DEEP_GREEN, fontSize: 44, fontWeight: 700, margin: 0, lineHeight: 1.65 }}>
-              {isAnnouncement ? "تعلن" : "تدعوكم"} كلية إدارة الأعمال بحوطة بني تميم
+              {L.verb} {L.college}
             </p>
             {representedBy && (
               <p style={{ color: DARK_TEAL, fontSize: 46, fontWeight: 600, margin: 0, lineHeight: 1.5 }}>
-                ممثلة بـ {representedBy}
+                {L.repBy} {representedBy}
               </p>
             )}
             <p style={{ color: "#1a1a1a", fontSize: 52, fontWeight: 500, margin: 0, lineHeight: 1.65, whiteSpace: "pre-wrap" }}>
-              لحضـور {eventType}
+              {L.toAttend} {eventType}
             </p>
           </div>
 
-          {/* ── Event title — teal, centered, no quotes ── */}
+          {/* ── Event title ── */}
           <div style={{ marginTop: 36, width: "100%", textAlign: "center" }}>
             <p style={{
               color: TEAL,
@@ -277,7 +280,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             </p>
           </div>
 
-          {/* ── INFO CARD — light bg, QR left + info rows right ── */}
+          {/* ── INFO CARD ── */}
           <div style={{
             marginTop: "auto",
             width: "100%",
@@ -292,7 +295,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             boxSizing: "border-box",
           }}>
 
-            {/* QR CODE — left side (always shown for online) */}
+            {/* QR CODE */}
             {isOnline && (
               <div style={{
                 flexShrink: 0,
@@ -321,38 +324,30 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               </div>
             )}
 
-            {/* INFO ROWS — right side */}
+            {/* INFO ROWS */}
             <div style={{
               flex: 1,
               display: "flex", flexDirection: "column",
               gap: 22,
-              direction: "rtl",
+              direction: isEn ? "ltr" : "rtl",
             }}>
-
-              {/* Time */}
-              <InfoRow icon={iconClock} text={time} subText={undefined} subLogo={undefined} />
-
-              {/* Day + Date */}
-              <InfoRow icon={iconCalendar} text={`${day}  ${date}`} subText={undefined} subLogo={undefined} />
-
-              {/* Location */}
+              <InfoRow icon={iconClock}    text={time} isEn={isEn} />
+              <InfoRow icon={iconCalendar} text={`${day}  ${date}`} isEn={isEn} />
               {isOnline ? (
                 <InfoRow
                   icon={iconLocation}
-                  text="عن بُعد"
+                  text={L.online}
                   subText={platformName}
                   subLogo={platformLogo}
                   urlText={meetingUrl || undefined}
+                  isEn={isEn}
                 />
               ) : (
-                <InfoRow icon={iconLocation} text={venue} subText={undefined} subLogo={undefined} />
+                <InfoRow icon={iconLocation} text={venue} isEn={isEn} />
               )}
-
-              {/* Certificate — always last */}
               {hasCertificate && (
-                <InfoRow icon={iconCert} text="يوجد شهادات حضور" subText={undefined} subLogo={undefined} />
+                <InfoRow icon={iconCert} text={L.certificate} isEn={isEn} />
               )}
-
             </div>
           </div>
 
@@ -381,7 +376,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
           flexShrink: 0,
           letterSpacing: 0,
         }}>
-          وحدة العلاقات العامة
+          {L.footer}
         </span>
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
           <img src={whiteSocial} alt="" crossOrigin="anonymous"
@@ -393,22 +388,23 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
   );
 }
 
-/* ── Single info row: icon (RTL start) + main text + optional sub-text/logo ── */
+/* ── Single info row ── */
 function InfoRow({
-  icon, text, subText, subLogo, urlText,
+  icon, text, subText, subLogo, urlText, isEn,
 }: {
   icon: string;
   text: string;
-  subText: string | undefined;
-  subLogo: string | undefined;
+  subText?: string;
+  subLogo?: string;
   urlText?: string;
+  isEn?: boolean;
 }) {
   return (
     <div style={{
       display: "flex", flexDirection: "row",
       alignItems: "center",
       gap: 16,
-      direction: "rtl",
+      direction: isEn ? "ltr" : "rtl",
     }}>
       <img src={icon} alt="" crossOrigin="anonymous"
         style={{ width: 58, height: 58, objectFit: "contain", flexShrink: 0 }} />
@@ -428,7 +424,7 @@ function InfoRow({
         {urlText && (
           <span style={{
             color: DARK_TEAL, fontSize: 28, fontWeight: 500, lineHeight: 1.3,
-            wordBreak: "break-all", direction: "ltr", textAlign: "right",
+            wordBreak: "break-all", direction: "ltr", textAlign: "left",
             marginTop: 4,
           }}>
             {urlText}

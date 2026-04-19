@@ -208,6 +208,9 @@ export default function AdGenerator() {
   const [data, setData] = useState<EventAdData>({ ...DEFAULT_DATA });
   const [exportFormat, setExportFormat] = useState<ExportFormat>("jpeg");
   const [isExporting, setIsExporting] = useState(false);
+  const [isExportingEn, setIsExportingEn] = useState(false);
+  const [enData, setEnData] = useState<EventAdData | null>(null);
+  const enExportRef = useRef<HTMLDivElement>(null);
 
   /* Raw picker values (internal) */
   const [rawTime, setRawTime] = useState("");
@@ -220,6 +223,100 @@ export default function AdGenerator() {
   const bgInputId  = useId();
   const qrInputId  = useId();
   const [qrUrl, setQrUrl] = useState("");
+
+  /* ── Google Translate (unofficial free endpoint) ── */
+  const tr = useCallback(async (text: string): Promise<string> => {
+    if (!text.trim()) return text;
+    try {
+      const r = await fetch(
+        `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ar&tl=en&dt=t&q=${encodeURIComponent(text)}`
+      );
+      const j = await r.json();
+      return (j[0] as [string, ...unknown[]][]).map(x => x[0]).join("");
+    } catch { return text; }
+  }, []);
+
+  /* ── Export in English ── */
+  const exportAsEnglish = useCallback(async () => {
+    setIsExportingEn(true);
+    const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
+    const activeW = orientation === "portrait" ? CANVAS_W   : CANVAS_W_L;
+    const activeH = orientation === "portrait" ? CANVAS_H   : CANVAS_H_L;
+    try {
+      /* Translate user-entered fields in parallel */
+      const [repTr, typeTr, titleTr, venueTr] = await Promise.all([
+        tr(data.representedBy ?? ""),
+        tr(data.eventType),
+        tr(data.eventTitle),
+        tr(data.venue),
+      ]);
+
+      /* Re-format date/time in English */
+      let timeEn = data.time;
+      let dayEn  = data.day;
+      let dateEn = data.date;
+      if (rawTime) {
+        const [hStr, mStr] = rawTime.split(":");
+        const h = parseInt(hStr, 10);
+        const m = parseInt(mStr, 10);
+        timeEn = `${h % 12 || 12}:${m.toString().padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+      }
+      if (rawDate) {
+        const d = new Date(rawDate + "T12:00:00");
+        dayEn  = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(d);
+        dateEn = new Intl.DateTimeFormat("en-US", { day: "numeric", month: "long", year: "numeric" }).format(d);
+      }
+
+      const translated: EventAdData = {
+        ...data,
+        representedBy: repTr,
+        eventType:  typeTr,
+        eventTitle: titleTr,
+        venue:      venueTr,
+        time: timeEn, day: dayEn, date: dateEn,
+        language: "en",
+      };
+      setEnData(translated);
+
+      /* Wait for re-render */
+      await new Promise(r => setTimeout(r, 500));
+
+      const el = enExportRef.current;
+      if (!el) return;
+      el.style.visibility = "visible";
+      await new Promise(r => setTimeout(r, 200));
+      const canvas = await html2canvas(el, {
+        scale: 1, useCORS: true, allowTaint: true,
+        backgroundColor: "#ffffff", logging: false,
+        width: activeW, height: activeH,
+        windowWidth: activeW, windowHeight: activeH,
+        imageTimeout: 20000,
+      });
+      el.style.visibility = "hidden";
+
+      if (fmt.id === "pdf") {
+        const isLandscape = activeW > activeH;
+        const pdf = new jsPDF({
+          orientation: isLandscape ? "landscape" : "portrait",
+          unit: "px", format: [activeW, activeH],
+          hotfixes: ["px_scaling"],
+        });
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, activeW, activeH);
+        pdf.save("event-announcement-en.pdf");
+      } else {
+        const link = document.createElement("a");
+        link.download = `event-announcement-en.${fmt.ext}`;
+        link.href = canvas.toDataURL(fmt.mime, fmt.quality);
+        link.click();
+      }
+    } catch (err) {
+      console.error(err);
+      if (enExportRef.current) enExportRef.current.style.visibility = "hidden";
+    } finally {
+      setIsExportingEn(false);
+      setEnData(null);
+    }
+  }, [data, exportFormat, rawTime, rawDate, orientation, tr]);
 
   const generateQrFromUrl = useCallback(async (url: string) => {
     if (!url.trim()) return;
@@ -337,7 +434,7 @@ export default function AdGenerator() {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Hidden full-size export canvas */}
+      {/* Hidden full-size Arabic export canvas */}
       <div ref={exportRef} style={{
         position: "fixed", top: 0, left: "-9999px",
         width: activeW, height: activeH,
@@ -347,6 +444,18 @@ export default function AdGenerator() {
           ? <EventAdCanvas data={data} />
           : <EventAdLandscapeCanvas data={data} />
         }
+      </div>
+
+      {/* Hidden full-size English export canvas */}
+      <div ref={enExportRef} style={{
+        position: "fixed", top: 0, left: "-9999px",
+        width: activeW, height: activeH,
+        visibility: "hidden", zIndex: -1, pointerEvents: "none",
+      }}>
+        {enData && (orientation === "portrait"
+          ? <EventAdCanvas data={enData} />
+          : <EventAdLandscapeCanvas data={enData} />
+        )}
       </div>
 
       {/* Header */}
@@ -432,8 +541,7 @@ export default function AdGenerator() {
               onChange={v => set("eventType", v)} multiline
               hint="دورة تدريبية / ورشة عمل / محاضرة علمية" />
             <Field label="عنوان الفعالية" value={data.eventTitle}
-              onChange={v => set("eventTitle", v)} multiline
-              hint="الذكاء الاصطناعي وتطبيقاته في التعليم" />
+              onChange={v => set("eventTitle", v)} multiline />
           </Section>
 
           {/* Date & Time */}
@@ -600,26 +708,42 @@ export default function AdGenerator() {
           </Section>
 
           {/* Actions */}
-          <div className="flex gap-3">
-            <Button data-testid="button-export" onClick={exportAsImage} disabled={isExporting}
-              className="flex-1 gap-2 bg-[#0e3020] hover:bg-[#1a4030] text-white">
-              {isExporting
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-3">
+              <Button data-testid="button-export" onClick={exportAsImage} disabled={isExporting || isExportingEn}
+                className="flex-1 gap-2 bg-[#0e3020] hover:bg-[#1a4030] text-white">
+                {isExporting
+                  ? <RefreshCw className="h-4 w-4 animate-spin" />
+                  : <Download className="h-4 w-4" />}
+                {isExporting
+                  ? "جاري التصدير..."
+                  : `تحميل ${exportFormat === "pdf" ? "الملف" : "الصورة"} (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
+              </Button>
+              <Button data-testid="button-reset" variant="outline"
+                onClick={() => {
+                  setData({ ...DEFAULT_DATA });
+                  setRawTime("");
+                  setRawDate("");
+                  setQrUrl("");
+                }}
+                className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                إعادة تعيين
+              </Button>
+            </div>
+            <Button
+              data-testid="button-export-en"
+              onClick={exportAsEnglish}
+              disabled={isExporting || isExportingEn}
+              variant="outline"
+              className="w-full gap-2 border-primary/40 text-primary hover:bg-primary/5"
+            >
+              {isExportingEn
                 ? <RefreshCw className="h-4 w-4 animate-spin" />
                 : <Download className="h-4 w-4" />}
-              {isExporting
-                ? "جاري التصدير..."
-                : `تحميل ${exportFormat === "pdf" ? "الملف" : "الصورة"} (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
-            </Button>
-            <Button data-testid="button-reset" variant="outline"
-              onClick={() => {
-                setData({ ...DEFAULT_DATA });
-                setRawTime("");
-                setRawDate("");
-                setQrUrl("");
-              }}
-              className="gap-2">
-              <RefreshCw className="h-4 w-4" />
-              إعادة تعيين
+              {isExportingEn
+                ? "Translating & exporting..."
+                : `Download in English (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
             </Button>
           </div>
         </div>

@@ -35,12 +35,26 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
     time, day, date,
     locationType, venue, meetingUrl,
     hasCertificate, qrCodeImage, adMode,
+    language,
   } = data;
 
+  const isEn           = language === "en";
   const isAnnouncement = adMode === "announcement";
   const isOnline     = locationType !== "in-person";
   const platformLogo = locationType === "teams" ? logoTeams : logoZoom;
   const platformName = locationType === "teams" ? "Microsoft Teams" : "Zoom";
+
+  /* Localised labels */
+  const L = {
+    card:        isAnnouncement ? (isEn ? "Announcement" : "إعلان") : (isEn ? "Invitation" : "دعوة"),
+    verb:        isAnnouncement ? (isEn ? "announces"    : "تعلن")  : (isEn ? "invites you" : "تدعوكم"),
+    college:     isEn ? "College of Business Administration, Huta Bani Tamim" : "كلية إدارة الأعمال بحوطة بني تميم",
+    repBy:       isEn ? "Represented by" : "ممثلة بـ",
+    toAttend:    isEn ? "to attend"      : "لحضـور",
+    online:      isEn ? "Online"         : "عن بُعد",
+    certificate: isEn ? "Attendance Certificate Available" : "يوجد شهادات حضور",
+    footer:      isEn ? "Public Relations Unit" : "وحدة العلاقات العامة",
+  };
 
   /* Pre-convert social bar to white so CSS filter isn't needed during export */
   const [whiteSocial, setWhiteSocial] = useState(socialBar);
@@ -68,7 +82,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
       position: "relative", overflow: "hidden",
       backgroundColor: "#ffffff",
       fontFamily: "'Cairo','Arial',sans-serif",
-      direction: "rtl",
+      direction: isEn ? "ltr" : "rtl",
     }}>
 
       {/* ══ 1. PHOTO SECTION — left side ══ */}
@@ -130,14 +144,10 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
               <stop offset="100%" stopColor={TEAL} stopOpacity="0"    />
             </linearGradient>
           </defs>
-
-          {/* White wedge that forms the right (white) section edge */}
           <path
             d={`M${ARC_W},0 L${ARC_W},${CANVAS_H_L} L0,${CANVAS_H_L} Q${ARC_W * 0.72},${CANVAS_H_L / 2} 0,0 Z`}
             fill="#ffffff"
           />
-
-          {/* Teal tapered ribbon — thick at center, tapers to nothing at top/bottom */}
           <path
             d={`M0,0 Q${ARC_W * 0.72},${CANVAS_H_L / 2} 0,${CANVAS_H_L}
                 Q${ARC_W * 0.42},${CANVAS_H_L / 2} 0,0 Z`}
@@ -154,7 +164,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
         backgroundColor: "#ffffff",
         zIndex: 5, overflow: "hidden",
       }}>
-        {/* Pattern overlay — fades toward the arc side */}
+        {/* Pattern overlay */}
         <img src={patternTransparent} alt="" crossOrigin="anonymous" style={{
           position: "absolute", inset: 0,
           width: "100%", height: "100%",
@@ -168,12 +178,12 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
         <div style={{
           position: "relative", zIndex: 2,
           display: "flex", flexDirection: "column",
-          alignItems: "flex-end",
+          alignItems: "center",
           padding: "75px 60px 32px 44px",
           height: "100%", boxSizing: "border-box",
         }}>
 
-          {/* "دعوة" heading */}
+          {/* Card type heading */}
           <div style={{ width: "100%", textAlign: "center", marginBottom: 10 }}>
             <span style={{
               color: DARK_TEAL,
@@ -182,25 +192,25 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
               lineHeight: 1,
               display: "block",
             }}>
-              {isAnnouncement ? "إعلان" : "دعوة"}
+              {L.card}
             </span>
           </div>
 
-          {/* Invitation text */}
+          {/* Invitation / announcement text */}
           <div style={{
             width: "100%", textAlign: "center",
             display: "flex", flexDirection: "column", gap: 6,
           }}>
             <p style={{ color: DEEP_GREEN, fontSize: 38, fontWeight: 700, margin: 0, lineHeight: 1.55 }}>
-              {isAnnouncement ? "تعلن" : "تدعوكم"} كلية إدارة الأعمال بحوطة بني تميم
+              {L.verb} {L.college}
             </p>
             {representedBy && (
               <p style={{ color: DARK_TEAL, fontSize: 40, fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
-                ممثلة بـ {representedBy}
+                {L.repBy} {representedBy}
               </p>
             )}
             <p style={{ color: "#1a1a1a", fontSize: 44, fontWeight: 500, margin: 0, lineHeight: 1.55, whiteSpace: "pre-wrap" }}>
-              لحضـور {eventType}
+              {L.toAttend} {eventType}
             </p>
           </div>
 
@@ -249,17 +259,17 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
               </div>
             )}
 
-            {/* Info rows — right side */}
-            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, direction: "rtl" }}>
-              <LInfoRow icon={iconClock}    text={time} />
-              <LInfoRow icon={iconCalendar} text={`${day}  ${date}`} />
+            {/* Info rows */}
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, direction: isEn ? "ltr" : "rtl" }}>
+              <LInfoRow icon={iconClock}    text={time} isEn={isEn} />
+              <LInfoRow icon={iconCalendar} text={`${day}  ${date}`} isEn={isEn} />
               {isOnline ? (
-                <LInfoRow icon={iconLocation} text="عن بُعد" subText={platformName} subLogo={platformLogo} urlText={meetingUrl || undefined} />
+                <LInfoRow icon={iconLocation} text={L.online} subText={platformName} subLogo={platformLogo} urlText={meetingUrl || undefined} isEn={isEn} />
               ) : (
-                <LInfoRow icon={iconLocation} text={venue} />
+                <LInfoRow icon={iconLocation} text={venue} isEn={isEn} />
               )}
               {hasCertificate && (
-                <LInfoRow icon={iconCert} text="يوجد شهادات حضور" />
+                <LInfoRow icon={iconCert} text={L.certificate} isEn={isEn} />
               )}
             </div>
           </div>
@@ -281,7 +291,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
           color: "#ffffff", fontSize: 28, fontWeight: 700,
           flexShrink: 0, letterSpacing: 0,
         }}>
-          وحدة العلاقات العامة
+          {L.footer}
         </span>
         <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
           <img src={whiteSocial} alt="" crossOrigin="anonymous"
@@ -294,16 +304,17 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
 }
 
 function LInfoRow({
-  icon, text, subText, subLogo, urlText,
+  icon, text, subText, subLogo, urlText, isEn,
 }: {
   icon: string;
   text: string;
   subText?: string;
   subLogo?: string;
   urlText?: string;
+  isEn?: boolean;
 }) {
   return (
-    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, direction: "rtl" }}>
+    <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 14, direction: isEn ? "ltr" : "rtl" }}>
       <img src={icon} alt="" crossOrigin="anonymous"
         style={{ width: 50, height: 50, objectFit: "contain", flexShrink: 0 }} />
       <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -322,7 +333,7 @@ function LInfoRow({
         {urlText && (
           <span style={{
             color: DARK_TEAL, fontSize: 22, fontWeight: 500, lineHeight: 1.3,
-            wordBreak: "break-all", direction: "ltr", textAlign: "right", marginTop: 3,
+            wordBreak: "break-all", direction: "ltr", textAlign: "left", marginTop: 3,
           }}>
             {urlText}
           </span>
