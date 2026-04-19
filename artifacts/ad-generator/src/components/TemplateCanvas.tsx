@@ -119,8 +119,9 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
       width: CANVAS_W, height: CANVAS_H,
       position: "relative", overflow: "hidden",
       backgroundColor: "#ffffff",
-      fontFamily: isEn ? "'Cairo','Arial',sans-serif" : "'Cairo','Arial',sans-serif",
+      fontFamily: "'Cairo','Arial',sans-serif",
       direction: isEn ? "ltr" : "rtl",
+      letterSpacing: 0,
     }}>
 
       {/* ══════════════════════════════════════

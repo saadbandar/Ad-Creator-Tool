@@ -83,6 +83,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
       backgroundColor: "#ffffff",
       fontFamily: "'Cairo','Arial',sans-serif",
       direction: isEn ? "ltr" : "rtl",
+      letterSpacing: 0,
     }}>
 
       {/* ══ 1. PHOTO SECTION — left side ══ */}
