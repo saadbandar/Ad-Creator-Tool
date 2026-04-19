@@ -258,7 +258,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
                 ممثلة بـ {representedBy}
               </p>
             )}
-            <p style={{ color: "#1a1a1a", fontSize: 52, fontWeight: 500, margin: 0, lineHeight: 1.65 }}>
+            <p style={{ color: "#1a1a1a", fontSize: 52, fontWeight: 500, margin: 0, lineHeight: 1.65, whiteSpace: "pre-wrap" }}>
               لحضـور {eventType}
             </p>
           </div>

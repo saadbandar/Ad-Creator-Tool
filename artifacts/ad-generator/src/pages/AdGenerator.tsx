@@ -712,9 +712,15 @@ function Field({ label, value, onChange, multiline }: {
     <div className="space-y-1">
       <p className="text-xs text-muted-foreground font-medium">{label}</p>
       {multiline ? (
-        <Textarea value={value} onChange={e => onChange(e.target.value)}
+        <Textarea value={value}
+          onChange={e => {
+            onChange(e.target.value);
+            const t = e.target;
+            t.style.height = "auto";
+            t.style.height = t.scrollHeight + "px";
+          }}
           placeholder={label} rows={2}
-          className="text-right text-sm resize-none" />
+          className="text-right text-sm resize-none overflow-hidden" />
       ) : (
         <Input value={value} onChange={e => onChange(e.target.value)}
           placeholder={label} className="text-right text-sm" />
