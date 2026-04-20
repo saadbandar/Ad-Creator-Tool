@@ -42,6 +42,18 @@ const DEFAULT_DATA: EventAdData = {
   adMode: "invitation",
 };
 
+/* ── Sanitise a title string into a safe filename (no extension) ── */
+function toFilename(title: string, fallback: string): string {
+  const s = title
+    .trim()
+    .replace(/[\r\n]+/g, " ")
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, " ")
+    .slice(0, 80)
+    .trim();
+  return s || fallback;
+}
+
 type ExportFormat = "pdf" | "png" | "jpeg";
 
 interface FormatOption {
@@ -302,10 +314,10 @@ export default function AdGenerator() {
           hotfixes: ["px_scaling"],
         });
         pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, activeW, activeH);
-        pdf.save("event-announcement-en.pdf");
+        pdf.save(`${toFilename(titleTr, "event-announcement")}.pdf`);
       } else {
         const link = document.createElement("a");
-        link.download = `event-announcement-en.${fmt.ext}`;
+        link.download = `${toFilename(titleTr, "event-announcement")}.${fmt.ext}`;
         link.href = canvas.toDataURL(fmt.mime, fmt.quality);
         link.click();
       }
@@ -415,10 +427,10 @@ export default function AdGenerator() {
         });
         const imgData = canvas.toDataURL("image/jpeg", 0.95);
         pdf.addImage(imgData, "JPEG", 0, 0, activeW, activeH);
-        pdf.save("إعلان-فعالية.pdf");
+        pdf.save(`${toFilename(data.eventTitle, "إعلان-فعالية")}.pdf`);
       } else {
         const link = document.createElement("a");
-        link.download = `إعلان-فعالية.${fmt.ext}`;
+        link.download = `${toFilename(data.eventTitle, "إعلان-فعالية")}.${fmt.ext}`;
         link.href = canvas.toDataURL(fmt.mime, fmt.quality);
         link.click();
       }
