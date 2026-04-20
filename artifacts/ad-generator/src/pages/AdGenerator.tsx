@@ -295,15 +295,14 @@ export default function AdGenerator() {
 
       const el = enExportRef.current;
       if (!el) return;
-      el.style.visibility = "visible";
       await new Promise(r => setTimeout(r, 300));
       const canvas = await toCanvas(el, {
         pixelRatio: 1,
         width: activeW,
         height: activeH,
         cacheBust: true,
+        backgroundColor: "#ffffff",
       });
-      el.style.visibility = "hidden";
 
       if (fmt.id === "pdf") {
         const isLandscape = activeW > activeH;
@@ -322,7 +321,6 @@ export default function AdGenerator() {
       }
     } catch (err) {
       console.error(err);
-      if (enExportRef.current) enExportRef.current.style.visibility = "hidden";
     } finally {
       setIsExportingEn(false);
       setEnData(null);
@@ -404,15 +402,14 @@ export default function AdGenerator() {
     setIsExporting(true);
     const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
     try {
-      el.style.visibility = "visible";
       await new Promise(r => setTimeout(r, 300));
       const canvas = await toCanvas(el, {
         pixelRatio: 1,
         width: activeW,
         height: activeH,
         cacheBust: true,
+        backgroundColor: "#ffffff",
       });
-      el.style.visibility = "hidden";
 
       if (fmt.id === "pdf") {
         const isLandscape = activeW > activeH;
@@ -432,7 +429,6 @@ export default function AdGenerator() {
       }
     } catch (err) {
       console.error(err);
-      if (exportRef.current) exportRef.current.style.visibility = "hidden";
     } finally {
       setIsExporting(false);
     }
@@ -442,28 +438,32 @@ export default function AdGenerator() {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
-      {/* Hidden full-size Arabic export canvas */}
-      <div ref={exportRef} style={{
-        position: "fixed", top: 0, left: "-9999px",
-        width: activeW, height: activeH,
-        visibility: "hidden", zIndex: -1, pointerEvents: "none",
+      {/* Export canvases – clipped to zero-size wrapper so the browser renders
+          them at position (0,0) and doesn't skip off-screen paint. */}
+      <div style={{
+        position: "fixed", top: 0, left: 0,
+        width: 0, height: 0, overflow: "hidden",
+        zIndex: -1, pointerEvents: "none",
       }}>
-        {orientation === "portrait"
-          ? <EventAdCanvas data={data} />
-          : <EventAdLandscapeCanvas data={data} />
-        }
+        <div ref={exportRef} style={{ width: activeW, height: activeH }}>
+          {orientation === "portrait"
+            ? <EventAdCanvas data={data} />
+            : <EventAdLandscapeCanvas data={data} />
+          }
+        </div>
       </div>
 
-      {/* Hidden full-size English export canvas */}
-      <div ref={enExportRef} style={{
-        position: "fixed", top: 0, left: "-9999px",
-        width: activeW, height: activeH,
-        visibility: "hidden", zIndex: -1, pointerEvents: "none",
+      <div style={{
+        position: "fixed", top: 0, left: 0,
+        width: 0, height: 0, overflow: "hidden",
+        zIndex: -1, pointerEvents: "none",
       }}>
-        {enData && (orientation === "portrait"
-          ? <EventAdCanvas data={enData} />
-          : <EventAdLandscapeCanvas data={enData} />
-        )}
+        <div ref={enExportRef} style={{ width: activeW, height: activeH }}>
+          {enData && (orientation === "portrait"
+            ? <EventAdCanvas data={enData} />
+            : <EventAdLandscapeCanvas data={enData} />
+          )}
+        </div>
       </div>
 
       {/* Header */}
