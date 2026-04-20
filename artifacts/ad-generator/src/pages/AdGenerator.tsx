@@ -440,7 +440,7 @@ export default function AdGenerator() {
     } finally {
       setIsExporting(false);
     }
-  }, [exportFormat, activeW, activeH, orientation]);
+  }, [exportFormat, activeW, activeH, orientation, data]);
 
   const isOnline = data.locationType === "teams" || data.locationType === "zoom";
 
