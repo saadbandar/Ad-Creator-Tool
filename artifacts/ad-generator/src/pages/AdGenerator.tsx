@@ -254,6 +254,9 @@ export default function AdGenerator() {
     const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
     const activeW = orientation === "portrait" ? CANVAS_W   : CANVAS_W_L;
     const activeH = orientation === "portrait" ? CANVAS_H   : CANVAS_H_L;
+    const fixStyle = document.createElement("style");
+    fixStyle.textContent = "* { letter-spacing: 0 !important; word-spacing: 0 !important; }";
+    document.head.appendChild(fixStyle);
     try {
       /* Translate user-entered fields in parallel */
       const [repTr, typeTr, titleTr, venueTr] = await Promise.all([
@@ -325,6 +328,7 @@ export default function AdGenerator() {
       console.error(err);
       if (enExportRef.current) enExportRef.current.style.visibility = "hidden";
     } finally {
+      document.head.removeChild(fixStyle);
       setIsExportingEn(false);
       setEnData(null);
     }
@@ -404,6 +408,11 @@ export default function AdGenerator() {
     if (!el) return;
     setIsExporting(true);
     const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
+    /* Inject a style that forces letter-spacing:0 on every element so
+       html2canvas (especially on mobile) doesn't split Arabic glyphs */
+    const fixStyle = document.createElement("style");
+    fixStyle.textContent = "* { letter-spacing: 0 !important; word-spacing: 0 !important; }";
+    document.head.appendChild(fixStyle);
     try {
       el.style.visibility = "visible";
       await new Promise(r => setTimeout(r, 200));
@@ -438,6 +447,7 @@ export default function AdGenerator() {
       console.error(err);
       if (exportRef.current) exportRef.current.style.visibility = "hidden";
     } finally {
+      document.head.removeChild(fixStyle);
       setIsExporting(false);
     }
   }, [exportFormat, activeW, activeH, orientation, data]);
