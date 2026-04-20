@@ -2,7 +2,7 @@ import { useState, useRef, useCallback, useId, useEffect, type PointerEvent } fr
 import QRCodeLib from "qrcode";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import defaultBg from "@assets/DJI_0449_1776326627177.jpg";
+import defaultBg from "@assets/خلفية_الاعلان__1776680502994.png";
 import logoImg from "@assets/تصميم_بدون_عنوان_1776144448792.png";
 import logoTeams from "@assets/image10.png";
 import logoZoom  from "@assets/image11.png";
