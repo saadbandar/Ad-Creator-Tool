@@ -9,7 +9,7 @@ import logoZoom  from "@assets/image11.png";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Download, RefreshCw, ImageIcon, Eye, QrCode } from "lucide-react";
+import { Download, RefreshCw, ImageIcon, Eye, QrCode, Plus, Trash2 } from "lucide-react";
 import {
   CANVAS_W, CANVAS_H,
   EventAdCanvas,
@@ -20,6 +20,13 @@ import {
   CANVAS_W_L, CANVAS_H_L,
   EventAdLandscapeCanvas,
 } from "@/components/TemplateLandscapeCanvas";
+import {
+  FREE_CANVAS_W, FREE_CANVAS_H,
+  FreeCard,
+  type FreeCardData,
+  type FreeTextBlock,
+  type FreeQrBlock,
+} from "@/components/FreeCardCanvas";
 
 /* ── Default data ── */
 const DEFAULT_DATA: EventAdData = {
@@ -40,6 +47,16 @@ const DEFAULT_DATA: EventAdData = {
   hasCertificate: false,
   qrCodeImage: undefined,
   adMode: "invitation",
+};
+
+const DEFAULT_FREE_DATA: FreeCardData = {
+  bgImage: defaultBg,
+  bgPositionX: 50, bgPositionY: 50, bgZoom: 1,
+  headerText: "",
+  headerColor: "#ffffff",
+  headerSize: 110,
+  textBlocks: [],
+  qrBlocks: [],
 };
 
 /* ── Sanitise a title string into a safe filename (no extension) ── */
@@ -217,6 +234,7 @@ const ImagePanControl = ({
 };
 
 export default function AdGenerator() {
+  /* ── Standard card state ── */
   const [data, setData] = useState<EventAdData>({ ...DEFAULT_DATA });
   const [exportFormat, setExportFormat] = useState<ExportFormat>("jpeg");
   const [isExporting, setIsExporting] = useState(false);
@@ -224,10 +242,8 @@ export default function AdGenerator() {
   const [enData, setEnData] = useState<EventAdData | null>(null);
   const enExportRef = useRef<HTMLDivElement>(null);
 
-  /* Raw picker values (internal) */
   const [rawTime, setRawTime] = useState("");
   const [rawDate, setRawDate] = useState("");
-
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [scale, setScale] = useState(0.35);
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -235,6 +251,13 @@ export default function AdGenerator() {
   const bgInputId  = useId();
   const qrInputId  = useId();
   const [qrUrl, setQrUrl] = useState("");
+
+  /* ── Free card state ── */
+  const [cardMode, setCardMode] = useState<"standard" | "free">("standard");
+  const [freeData, setFreeData] = useState<FreeCardData>({ ...DEFAULT_FREE_DATA });
+  const [isExportingFree, setIsExportingFree] = useState(false);
+  const freeExportRef = useRef<HTMLDivElement>(null);
+  const freeBgInputId = useId();
 
   /* ── Google Translate (unofficial free endpoint) ── */
   const tr = useCallback(async (text: string): Promise<string> => {
@@ -337,6 +360,94 @@ export default function AdGenerator() {
       set("qrCodeImage", dataUrl);
     } catch (_) {}
   }, []);
+
+  /* ── Free card helpers ── */
+  const setFree = <K extends keyof FreeCardData>(key: K, value: FreeCardData[K]) =>
+    setFreeData(prev => ({ ...prev, [key]: value }));
+
+  const handleFreeBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => ev.target?.result && setFree("bgImage", ev.target.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  const addTextBlock = () => {
+    const block: FreeTextBlock = {
+      id: crypto.randomUUID(),
+      text: "",
+      color: "#0e3020",
+      fontSize: 48,
+      fontWeight: 700,
+      align: "right",
+    };
+    setFreeData(prev => ({ ...prev, textBlocks: [...prev.textBlocks, block] }));
+  };
+
+  const updateTextBlock = (id: string, patch: Partial<FreeTextBlock>) =>
+    setFreeData(prev => ({
+      ...prev,
+      textBlocks: prev.textBlocks.map(b => b.id === id ? { ...b, ...patch } : b),
+    }));
+
+  const removeTextBlock = (id: string) =>
+    setFreeData(prev => ({ ...prev, textBlocks: prev.textBlocks.filter(b => b.id !== id) }));
+
+  const addQrBlock = () => {
+    const block: FreeQrBlock = { id: crypto.randomUUID(), label: "", qrImage: undefined };
+    setFreeData(prev => ({ ...prev, qrBlocks: [...prev.qrBlocks, block] }));
+  };
+
+  const updateQrBlock = (id: string, patch: Partial<FreeQrBlock>) =>
+    setFreeData(prev => ({
+      ...prev,
+      qrBlocks: prev.qrBlocks.map(b => b.id === id ? { ...b, ...patch } : b),
+    }));
+
+  const removeQrBlock = (id: string) =>
+    setFreeData(prev => ({ ...prev, qrBlocks: prev.qrBlocks.filter(b => b.id !== id) }));
+
+  const generateFreeQr = useCallback(async (blockId: string, url: string) => {
+    if (!url.trim()) { updateQrBlock(blockId, { qrImage: undefined }); return; }
+    try {
+      const dataUrl = await QRCodeLib.toDataURL(url.trim(), {
+        width: 400, margin: 1,
+        color: { dark: "#0e3020", light: "#ffffff" },
+      });
+      updateQrBlock(blockId, { qrImage: dataUrl });
+    } catch (_) {}
+  }, []); // eslint-disable-line
+
+  const exportFreeCard = useCallback(async () => {
+    const el = freeExportRef.current;
+    if (!el) return;
+    setIsExportingFree(true);
+    const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
+    try {
+      await new Promise(r => setTimeout(r, 300));
+      const canvas = await toCanvas(el, {
+        pixelRatio: 1,
+        width: FREE_CANVAS_W,
+        height: FREE_CANVAS_H,
+        cacheBust: true,
+        backgroundColor: "#ffffff",
+      });
+      const title = freeData.textBlocks[0]?.text || freeData.headerText || "بطاقة-حرة";
+      if (fmt.id === "pdf") {
+        const pdf = new jsPDF({ orientation: "portrait", unit: "px",
+          format: [FREE_CANVAS_W, FREE_CANVAS_H], hotfixes: ["px_scaling"] });
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, FREE_CANVAS_W, FREE_CANVAS_H);
+        pdf.save(`${toFilename(title, "بطاقة-حرة")}.pdf`);
+      } else {
+        const link = document.createElement("a");
+        link.download = `${toFilename(title, "بطاقة-حرة")}.${fmt.ext}`;
+        link.href = canvas.toDataURL(fmt.mime, fmt.quality);
+        link.click();
+      }
+    } catch (err) { console.error(err); }
+    finally { setIsExportingFree(false); }
+  }, [exportFormat, freeData]);
 
   const activeW = orientation === "portrait" ? CANVAS_W   : CANVAS_W_L;
   const activeH = orientation === "portrait" ? CANVAS_H   : CANVAS_H_L;
@@ -453,6 +564,17 @@ export default function AdGenerator() {
         </div>
       </div>
 
+      {/* Free card export canvas */}
+      <div style={{
+        position: "fixed", top: 0, left: 0,
+        width: 0, height: 0, overflow: "hidden",
+        zIndex: -1, pointerEvents: "none",
+      }}>
+        <div ref={freeExportRef} style={{ width: FREE_CANVAS_W, height: FREE_CANVAS_H }}>
+          <FreeCard data={freeData} />
+        </div>
+      </div>
+
       <div style={{
         position: "fixed", top: 0, left: 0,
         width: 0, height: 0, overflow: "hidden",
@@ -519,26 +641,196 @@ export default function AdGenerator() {
             )}
           </Section>
 
-          {/* Ad mode toggle */}
+          {/* Card type selector */}
           <Section title="نوع البطاقة">
             <div className="flex gap-2">
               {([
-                { id: "invitation",   label: "دعوة"   },
-                { id: "announcement", label: "إعلان"  },
-              ] as const).map(opt => (
-                <button key={opt.id}
-                  onClick={() => set("adMode", opt.id)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
-                    data.adMode === opt.id
-                      ? "bg-primary text-primary-foreground border-primary"
-                      : "bg-background text-foreground border-border hover:border-primary/50"
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+                { id: "standard-invitation",   label: "دعوة",        adMode: "invitation"   },
+                { id: "standard-announcement", label: "إعلان",       adMode: "announcement" },
+                { id: "free",                  label: "بطاقة حرة",   adMode: null           },
+              ] as const).map(opt => {
+                const isActive = opt.id === "free"
+                  ? cardMode === "free"
+                  : cardMode === "standard" && data.adMode === opt.adMode;
+                return (
+                  <button key={opt.id}
+                    onClick={() => {
+                      if (opt.id === "free") {
+                        setCardMode("free");
+                      } else {
+                        setCardMode("standard");
+                        set("adMode", opt.adMode!);
+                      }
+                    }}
+                    className={`flex-1 py-2 rounded-lg text-sm font-bold border-2 transition-all ${
+                      isActive
+                        ? "bg-primary text-primary-foreground border-primary"
+                        : "bg-background text-foreground border-border hover:border-primary/50"
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </Section>
+
+          {/* ══ FREE CARD FORM ══ */}
+          {cardMode === "free" && (<>
+
+            {/* Free background image */}
+            <Section title="صورة الخلفية">
+              <label htmlFor={freeBgInputId}
+                className="flex flex-col items-center gap-2 border-2 border-dashed border-primary/40 rounded-lg p-4 cursor-pointer hover:border-primary/70 hover:bg-primary/5 transition-all">
+                <ImageIcon className="h-6 w-6 text-primary/60" />
+                <span className="text-xs text-muted-foreground text-center">
+                  اضغط لرفع صورة خلفية<br />
+                  <span className="text-primary font-medium">JPG, PNG, WEBP</span>
+                </span>
+                <input id={freeBgInputId} type="file" accept="image/*"
+                  className="hidden" onChange={handleFreeBgUpload} />
+              </label>
+              {freeData.bgImage !== defaultBg && (
+                <button onClick={() => setFree("bgImage", defaultBg)}
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+                  ← استخدام الصورة الافتراضية
+                </button>
+              )}
+            </Section>
+
+            {/* Header text (over photo) */}
+            <Section title="النص الكبير (فوق الصورة)">
+              <Field label="النص" value={freeData.headerText}
+                onChange={v => setFree("headerText", v)} hint="مثال: دعوة / إعلان / نتائج" />
+              <div className="flex items-center gap-3 pt-1">
+                <label className="text-xs text-muted-foreground font-medium shrink-0">اللون</label>
+                <input type="color" value={freeData.headerColor}
+                  onChange={e => setFree("headerColor", e.target.value)}
+                  className="w-8 h-8 rounded cursor-pointer border border-border" />
+                <label className="text-xs text-muted-foreground font-medium shrink-0 mr-2">الحجم</label>
+                <input type="range" min={60} max={160} step={2}
+                  value={freeData.headerSize}
+                  onChange={e => setFree("headerSize", Number(e.target.value))}
+                  className="flex-1 accent-primary h-1.5 cursor-pointer" />
+                <span className="text-xs text-muted-foreground font-mono w-10 text-left">{freeData.headerSize}px</span>
+              </div>
+            </Section>
+
+            {/* Text blocks */}
+            <Section title="مقاطع النص">
+              {freeData.textBlocks.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  لا توجد مقاطع بعد — اضغط "إضافة نص"
+                </p>
+              )}
+              {freeData.textBlocks.map((block, idx) => (
+                <div key={block.id} className="border border-border rounded-xl p-3 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-muted-foreground">نص {idx + 1}</span>
+                    <button onClick={() => removeTextBlock(block.id)}
+                      className="text-destructive hover:opacity-70 transition-opacity">
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+
+                  <Textarea value={block.text}
+                    onChange={e => {
+                      updateTextBlock(block.id, { text: e.target.value });
+                      const t = e.target;
+                      t.style.height = "auto";
+                      t.style.height = t.scrollHeight + "px";
+                    }}
+                    placeholder="اكتب النص هنا..." rows={2}
+                    className="text-right text-sm resize-none overflow-hidden" />
+
+                  {/* Color + size row */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <label className="text-xs text-muted-foreground shrink-0">اللون</label>
+                    <input type="color" value={block.color}
+                      onChange={e => updateTextBlock(block.id, { color: e.target.value })}
+                      className="w-7 h-7 rounded cursor-pointer border border-border" />
+                    <label className="text-xs text-muted-foreground shrink-0 mr-1">الحجم</label>
+                    <input type="range" min={24} max={100} step={2}
+                      value={block.fontSize}
+                      onChange={e => updateTextBlock(block.id, { fontSize: Number(e.target.value) })}
+                      className="w-24 accent-primary h-1.5 cursor-pointer" />
+                    <span className="text-xs font-mono text-muted-foreground w-10">{block.fontSize}px</span>
+                  </div>
+
+                  {/* Weight buttons */}
+                  <div className="flex gap-1">
+                    {([
+                      { w: 400, label: "عادي" },
+                      { w: 600, label: "متوسط" },
+                      { w: 700, label: "عريض" },
+                      { w: 900, label: "أسود" },
+                    ] as const).map(({ w, label }) => (
+                      <button key={w}
+                        onClick={() => updateTextBlock(block.id, { fontWeight: w })}
+                        className={`flex-1 text-xs py-1 rounded-md border transition-all ${
+                          block.fontWeight === w
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border hover:border-primary/40"
+                        }`}
+                        style={{ fontWeight: w }}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Alignment buttons */}
+                  <div className="flex gap-1">
+                    {([
+                      { a: "right",  label: "يمين" },
+                      { a: "center", label: "وسط"  },
+                      { a: "left",   label: "يسار" },
+                    ] as const).map(({ a, label }) => (
+                      <button key={a}
+                        onClick={() => updateTextBlock(block.id, { align: a })}
+                        className={`flex-1 text-xs py-1 rounded-md border transition-all ${
+                          block.align === a
+                            ? "border-primary bg-primary/10 text-primary"
+                            : "border-border hover:border-primary/40"
+                        }`}>
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              <button onClick={addTextBlock}
+                className="w-full mt-1 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/40 py-2 text-sm text-primary hover:border-primary hover:bg-primary/5 transition-all">
+                <Plus className="h-4 w-4" />
+                إضافة نص
+              </button>
+            </Section>
+
+            {/* QR codes */}
+            <Section title="رموز QR (باركود)">
+              {freeData.qrBlocks.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-2">
+                  لا توجد باركودات بعد — اضغط "إضافة باركود"
+                </p>
+              )}
+              {freeData.qrBlocks.map((qr, idx) => (
+                <FreeQrEditor key={qr.id} qr={qr} idx={idx}
+                  onGenerate={url => generateFreeQr(qr.id, url)}
+                  onLabelChange={label => updateQrBlock(qr.id, { label })}
+                  onRemove={() => removeQrBlock(qr.id)}
+                  onUpload={img => updateQrBlock(qr.id, { qrImage: img })}
+                />
+              ))}
+              <button onClick={addQrBlock}
+                className="w-full mt-1 flex items-center justify-center gap-2 rounded-lg border-2 border-dashed border-primary/40 py-2 text-sm text-primary hover:border-primary hover:bg-primary/5 transition-all">
+                <Plus className="h-4 w-4" />
+                إضافة باركود
+              </button>
+            </Section>
+
+          </>)}
+
+          {/* ══ STANDARD CARD FORM ══ */}
+          {cardMode === "standard" && (<>
 
           {/* Event info */}
           <Section title="بيانات الفعالية">
@@ -692,7 +984,9 @@ export default function AdGenerator() {
             </button>
           </Section>
 
-          {/* ══ EXPORT FORMAT ══ */}
+          </>)} {/* end standard form */}
+
+          {/* ══ EXPORT FORMAT (shared) ══ */}
           <Section title="صيغة الحفظ">
             <div className="grid grid-cols-3 gap-2">
               {FORMAT_OPTIONS.map(fmt => (
@@ -717,42 +1011,63 @@ export default function AdGenerator() {
 
           {/* Actions */}
           <div className="flex flex-col gap-2">
-            <div className="flex gap-3">
-              <Button data-testid="button-export" onClick={exportAsImage} disabled={isExporting || isExportingEn}
-                className="flex-1 gap-2 bg-[#0e3020] hover:bg-[#1a4030] text-white">
-                {isExporting
+            {/* ── Free card actions ── */}
+            {cardMode === "free" && (
+              <div className="flex gap-3">
+                <Button onClick={exportFreeCard} disabled={isExportingFree}
+                  className="flex-1 gap-2 bg-[#0e3020] hover:bg-[#1a4030] text-white">
+                  {isExportingFree ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  {isExportingFree ? "جاري التصدير..." : `تحميل البطاقة (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
+                </Button>
+                <Button variant="outline"
+                  onClick={() => setFreeData({ ...DEFAULT_FREE_DATA })}
+                  className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  إعادة تعيين
+                </Button>
+              </div>
+            )}
+            {/* ── Standard card actions ── */}
+            {cardMode === "standard" && (
+            <>
+              <div className="flex gap-3">
+                <Button data-testid="button-export" onClick={exportAsImage} disabled={isExporting || isExportingEn}
+                  className="flex-1 gap-2 bg-[#0e3020] hover:bg-[#1a4030] text-white">
+                  {isExporting
+                    ? <RefreshCw className="h-4 w-4 animate-spin" />
+                    : <Download className="h-4 w-4" />}
+                  {isExporting
+                    ? "جاري التصدير..."
+                    : `تحميل ${exportFormat === "pdf" ? "الملف" : "الصورة"} (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
+                </Button>
+                <Button data-testid="button-reset" variant="outline"
+                  onClick={() => {
+                    setData({ ...DEFAULT_DATA });
+                    setRawTime("");
+                    setRawDate("");
+                    setQrUrl("");
+                  }}
+                  className="gap-2">
+                  <RefreshCw className="h-4 w-4" />
+                  إعادة تعيين
+                </Button>
+              </div>
+              <Button
+                data-testid="button-export-en"
+                onClick={exportAsEnglish}
+                disabled={isExporting || isExportingEn}
+                variant="outline"
+                className="w-full gap-2 border-primary/40 text-primary hover:bg-primary/5"
+              >
+                {isExportingEn
                   ? <RefreshCw className="h-4 w-4 animate-spin" />
                   : <Download className="h-4 w-4" />}
-                {isExporting
-                  ? "جاري التصدير..."
-                  : `تحميل ${exportFormat === "pdf" ? "الملف" : "الصورة"} (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
+                {isExportingEn
+                  ? "Translating & exporting..."
+                  : `Download in English (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
               </Button>
-              <Button data-testid="button-reset" variant="outline"
-                onClick={() => {
-                  setData({ ...DEFAULT_DATA });
-                  setRawTime("");
-                  setRawDate("");
-                  setQrUrl("");
-                }}
-                className="gap-2">
-                <RefreshCw className="h-4 w-4" />
-                إعادة تعيين
-              </Button>
-            </div>
-            <Button
-              data-testid="button-export-en"
-              onClick={exportAsEnglish}
-              disabled={isExporting || isExportingEn}
-              variant="outline"
-              className="w-full gap-2 border-primary/40 text-primary hover:bg-primary/5"
-            >
-              {isExportingEn
-                ? <RefreshCw className="h-4 w-4 animate-spin" />
-                : <Download className="h-4 w-4" />}
-              {isExportingEn
-                ? "Translating & exporting..."
-                : `Download in English (${FORMAT_OPTIONS.find(f => f.id === exportFormat)?.label})`}
-            </Button>
+            </>
+            )} {/* end standard card actions */}
           </div>
         </div>
 
@@ -763,11 +1078,14 @@ export default function AdGenerator() {
               <h2 className="text-sm font-bold">معاينة الإعلان</h2>
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Eye className="h-3.5 w-3.5" />
-                {orientation === "portrait" ? "1080 × 1920" : "1920 × 1080"} بكسل
+                {cardMode === "free"
+                  ? "1080 × 1920 بكسل"
+                  : orientation === "portrait" ? "1080 × 1920" : "1920 × 1080"} بكسل
               </div>
             </div>
 
-            {/* Orientation toggle */}
+            {/* Orientation toggle — standard cards only */}
+            {cardMode === "standard" && (
             <div className="flex gap-2 mb-3">
               {(["portrait", "landscape"] as const).map(o => (
                 <button
@@ -786,28 +1104,34 @@ export default function AdGenerator() {
                 </button>
               ))}
             </div>
+            )}
 
             {/* Canvas wrapper */}
             <div
               ref={wrapperRef}
               className="w-full bg-muted/30 rounded-lg mx-auto"
               style={{
-                aspectRatio: orientation === "portrait" ? "9/16" : "16/9",
+                aspectRatio: cardMode === "free" ? "9/16"
+                  : orientation === "portrait" ? "9/16" : "16/9",
                 position: "relative", overflow: "hidden",
-                maxWidth: orientation === "portrait" ? 420 : "100%",
+                maxWidth: (cardMode === "free" || orientation === "portrait") ? 420 : "100%",
               }}
             >
               <div style={{
                 position: "absolute", top: 0, left: 0,
-                transform: `scale(${scale})`,
+                transform: `scale(${cardMode === "free"
+                  ? (wrapperRef.current?.getBoundingClientRect().width ?? 400) / FREE_CANVAS_W
+                  : scale})`,
                 transformOrigin: "top left",
-                width: activeW,
-                height: activeH,
+                width:  cardMode === "free" ? FREE_CANVAS_W : activeW,
+                height: cardMode === "free" ? FREE_CANVAS_H : activeH,
                 pointerEvents: "none",
               }}>
-                {orientation === "portrait"
-                  ? <EventAdCanvas data={data} />
-                  : <EventAdLandscapeCanvas data={data} />
+                {cardMode === "free"
+                  ? <FreeCard data={freeData} />
+                  : orientation === "portrait"
+                    ? <EventAdCanvas data={data} />
+                    : <EventAdLandscapeCanvas data={data} />
                 }
               </div>
             </div>
@@ -815,9 +1139,11 @@ export default function AdGenerator() {
 
           <div className="bg-accent/20 border border-accent-border rounded-lg px-4 py-2.5">
             <p className="text-xs text-foreground/70">
-              {orientation === "portrait"
-                ? <><strong>عمودي:</strong> 1080×1920 بكسل — مناسب لقصص سناب شات وإنستغرام.</>
-                : <><strong>أفقي:</strong> 1920×1080 بكسل — مناسب للشاشات والعروض التقديمية.</>
+              {cardMode === "free"
+                ? <><strong>بطاقة حرة:</strong> 1080×1920 بكسل — محتوى كامل التخصيص بهوية الجامعة.</>
+                : orientation === "portrait"
+                  ? <><strong>عمودي:</strong> 1080×1920 بكسل — مناسب لقصص سناب شات وإنستغرام.</>
+                  : <><strong>أفقي:</strong> 1920×1080 بكسل — مناسب للشاشات والعروض التقديمية.</>
               }
             </p>
           </div>
@@ -834,6 +1160,78 @@ function Section({ title, children }: { title: string; children: React.ReactNode
     <div className="bg-card border border-card-border rounded-xl p-4 shadow-sm">
       <h2 className="text-sm font-bold mb-3 pb-2 border-b border-border">{title}</h2>
       <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+/* ── QR editor row for free card ── */
+function FreeQrEditor({ qr, idx, onGenerate, onLabelChange, onRemove, onUpload }: {
+  qr: FreeQrBlock;
+  idx: number;
+  onGenerate: (url: string) => void;
+  onLabelChange: (label: string) => void;
+  onRemove: () => void;
+  onUpload: (dataUrl: string) => void;
+}) {
+  const [url, setUrl] = useState("");
+  const uploadId = useId();
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => ev.target?.result && onUpload(ev.target.result as string);
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <div className="border border-border rounded-xl p-3 space-y-2">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-bold text-muted-foreground">باركود {idx + 1}</span>
+        <button onClick={onRemove} className="text-destructive hover:opacity-70 transition-opacity">
+          <Trash2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+
+      {/* URL → auto QR */}
+      <div className="flex gap-2 items-center">
+        <div className="relative flex-1">
+          <QrCode className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <Input dir="ltr" placeholder="https://…"
+            value={url}
+            className="pr-8 text-xs placeholder:text-right"
+            onChange={e => { setUrl(e.target.value); onGenerate(e.target.value); }} />
+        </div>
+        {url && (
+          <button className="text-xs text-muted-foreground hover:text-foreground transition-colors shrink-0"
+            onClick={() => { setUrl(""); onGenerate(""); }}>✕</button>
+        )}
+      </div>
+
+      {/* Or upload */}
+      <label htmlFor={uploadId}
+        className="flex items-center gap-2 border border-dashed border-primary/30 rounded-lg px-3 py-1.5 cursor-pointer hover:border-primary/60 hover:bg-primary/5 transition-all">
+        <span className="text-xs text-muted-foreground">
+          {qr.qrImage && !url
+            ? <span className="text-primary font-medium">✓ تم رفع الباركود — اضغط للتغيير</span>
+            : <span>أو ارفع صورة QR جاهزة</span>}
+        </span>
+        <input id={uploadId} type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+      </label>
+
+      {/* Label below QR */}
+      <Input value={qr.label}
+        onChange={e => onLabelChange(e.target.value)}
+        placeholder="عنوان الباركود (مثال: للتسجيل)"
+        className="text-right text-sm" />
+
+      {/* Preview thumbnail */}
+      {qr.qrImage && (
+        <div className="flex justify-center">
+          <img src={qr.qrImage} alt="QR preview"
+            className="w-16 h-16 rounded border border-border object-contain" />
+        </div>
+      )}
     </div>
   );
 }
