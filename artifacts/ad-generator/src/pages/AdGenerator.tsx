@@ -389,7 +389,7 @@ export default function AdGenerator() {
       color: "#0e3020",
       fontSize: 48,
       fontWeight: 700,
-      align: "right",
+      align: "center",
     };
     setFreeData(prev => ({ ...prev, textBlocks: [...prev.textBlocks, block] }));
   };
