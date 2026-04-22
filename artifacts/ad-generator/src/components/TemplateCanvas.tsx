@@ -40,6 +40,7 @@ export interface EventAdData {
   qrCodeImage?: string;
   adMode: "invitation" | "announcement";
   language?: "ar" | "en";
+  actionText?: string;
 }
 
 const TEAL       = "#5ab8b0";
@@ -83,7 +84,6 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
     verb:        isAnnouncement ? (isEn ? "announces"    : "تعلن")  : (isEn ? "invites you" : "تدعوكم"),
     college:     isEn ? "College of Business Administration, Huta Bani Tamim" : "كلية إدارة الأعمال بحوطة بني تميم",
     repBy:       isEn ? "Represented by" : "ممثلة بـ",
-    toAttend:    isEn ? "to attend"      : "لحضـور",
     online:      isEn ? "Online"         : "عن بُعد",
     certificate: isEn ? "Attendance Certificate Available" : "يوجد شهادات حضور",
     footer:      isEn ? "Public Relations Unit" : "وحدة العلاقات العامة",
@@ -263,7 +263,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               </p>
             )}
             <p style={{ color: "#1a1a1a", fontSize: 52, fontWeight: 500, margin: 0, lineHeight: 1.65, whiteSpace: "pre-wrap" }}>
-              {L.toAttend} {eventType}
+              {data.actionText ? `${data.actionText} ` : ""}{eventType}
             </p>
           </div>
 
