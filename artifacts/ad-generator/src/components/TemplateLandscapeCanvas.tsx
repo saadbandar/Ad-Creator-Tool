@@ -86,8 +86,8 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
       letterSpacing: 0,
     }}>
 
-      {/* ══ 1. PHOTO SECTION — left side ══ */}
-      <div style={{ position: "absolute", top: 0, left: 0, width: PHOTO_W, bottom: 0 }}>
+      {/* ══ 1. PHOTO SECTION — right side ══ */}
+      <div style={{ position: "absolute", top: 0, right: 0, width: PHOTO_W, bottom: 0 }}>
 
         <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
           <img src={bgImage} alt="" crossOrigin="anonymous" style={{
@@ -129,12 +129,13 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
       {/* ══ 2. VERTICAL ARC SEPARATOR ══ */}
       <div style={{
         position: "absolute", top: 0, bottom: 0,
-        left: ARC_START, width: ARC_W, zIndex: 15,
+        right: ARC_START, width: ARC_W, zIndex: 15,
       }}>
         <svg
           viewBox={`0 0 ${ARC_W} ${CANVAS_H_L}`}
           preserveAspectRatio="none"
           width={ARC_W} height={CANVAS_H_L}
+          style={{ transform: "scaleX(-1)", display: "block" }}
         >
           <defs>
             <linearGradient id="arcVGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -157,10 +158,10 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
         </svg>
       </div>
 
-      {/* ══ 3. WHITE SECTION — right side (above footer) ══ */}
+      {/* ══ 3. WHITE SECTION — left side (above footer) ══ */}
       <div style={{
         position: "absolute",
-        top: 0, left: WHITE_LEFT, right: 0,
+        top: 0, left: 0, right: WHITE_LEFT,
         bottom: FOOTER_H,
         backgroundColor: "#ffffff",
         zIndex: 5, overflow: "hidden",
@@ -171,8 +172,8 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
           width: "100%", height: "100%",
           objectFit: "cover", objectPosition: "center",
           opacity: 0.11, pointerEvents: "none",
-          WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 30%, transparent 100%)",
-          maskImage:        "linear-gradient(to left, rgba(0,0,0,1) 30%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 30%, transparent 100%)",
+          maskImage:        "linear-gradient(to right, rgba(0,0,0,1) 30%, transparent 100%)",
         }} />
 
         {/* Content column */}
@@ -278,10 +279,10 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
         </div>
       </div>
 
-      {/* ══ 4. FOOTER — dark teal, spans right section ══ */}
+      {/* ══ 4. FOOTER — dark teal, spans left section ══ */}
       <div style={{
         position: "absolute",
-        bottom: 0, left: WHITE_LEFT, right: 0,
+        bottom: 0, left: 0, right: WHITE_LEFT,
         height: FOOTER_H,
         backgroundColor: DARK_TEAL,
         zIndex: 20,

@@ -65,8 +65,8 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
       letterSpacing: 0,
     }}>
 
-      {/* ══ 1. PHOTO SECTION — left side ══ */}
-      <div style={{ position: "absolute", top: 0, left: 0, width: PHOTO_W, bottom: 0 }}>
+      {/* ══ 1. PHOTO SECTION — right side ══ */}
+      <div style={{ position: "absolute", top: 0, right: 0, width: PHOTO_W, bottom: 0 }}>
 
         <div style={{ position: "absolute", inset: 0, overflow: "hidden" }}>
           <img src={bgImage} alt="" crossOrigin="anonymous" style={{
@@ -127,11 +127,12 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
       {/* ══ 2. VERTICAL ARC — between photo and white ══ */}
       <div style={{
         position: "absolute", top: 0, bottom: 0,
-        left: ARC_START, width: ARC_W + 2,
+        right: ARC_START, width: ARC_W + 2,
         zIndex: 15,
       }}>
         <svg viewBox="0 0 162 1080" preserveAspectRatio="none"
-          width={ARC_W + 2} height={FREE_CANVAS_H_L}>
+          width={ARC_W + 2} height={FREE_CANVAS_H_L}
+          style={{ transform: "scaleX(-1)", display: "block" }}>
           <defs>
             <linearGradient id="freeArcGradL" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%"   stopColor={TEAL} stopOpacity="0"   />
@@ -148,10 +149,10 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
         </svg>
       </div>
 
-      {/* ══ 3. WHITE CONTENT SECTION — right side ══ */}
+      {/* ══ 3. WHITE CONTENT SECTION — left side ══ */}
       <div style={{
         position: "absolute",
-        top: 0, left: WHITE_LEFT, right: 0,
+        top: 0, left: 0, right: WHITE_LEFT,
         bottom: FOOTER_H,
         backgroundColor: "#ffffff",
         zIndex: 5, overflow: "hidden",
@@ -162,8 +163,8 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
           width: "100%", height: "100%",
           objectFit: "cover", objectPosition: "center",
           opacity: 0.10, pointerEvents: "none",
-          WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
-          maskImage:        "linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
+          WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
+          maskImage:        "linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,0.4) 60%, transparent 100%)",
         }} />
 
         {/* Content column */}
@@ -252,7 +253,7 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
       {/* ══ 4. FOOTER — dark teal bar ══ */}
       <div style={{
         position: "absolute",
-        left: WHITE_LEFT, right: 0,
+        left: 0, right: WHITE_LEFT,
         bottom: 0, height: FOOTER_H,
         backgroundColor: DARK_TEAL,
         zIndex: 20,
