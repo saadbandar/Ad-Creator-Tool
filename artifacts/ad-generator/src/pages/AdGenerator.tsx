@@ -50,7 +50,6 @@ const DEFAULT_DATA: EventAdData = {
   departmentName: "",
   representedBy: "",
   eventType: "",
-  actionText: "",
   eventTitle: "",
   time: "",
   day: "",
@@ -873,9 +872,6 @@ export default function AdGenerator() {
             <Field label="نوع الفعالية" value={data.eventType}
               onChange={v => set("eventType", v)} multiline
               hint="دورة تدريبية / ورشة عمل / محاضرة علمية" />
-            <Field label="فعل الدعوة" value={data.actionText ?? ""}
-              onChange={v => set("actionText", v)}
-              hint="لحضور / للتسجيل / للمشاركة / للاستفادة …" />
             <Field label="عنوان الفعالية" value={data.eventTitle}
               onChange={v => set("eventTitle", v)} multiline />
           </Section>

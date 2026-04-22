@@ -40,7 +40,6 @@ export interface EventAdData {
   qrCodeImage?: string;
   adMode: "invitation" | "announcement";
   language?: "ar" | "en";
-  actionText?: string;
 }
 
 const TEAL       = "#5ab8b0";
@@ -263,7 +262,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               </p>
             )}
             <p style={{ color: "#1a1a1a", fontSize: 52, fontWeight: 500, margin: 0, lineHeight: 1.65, whiteSpace: "pre-wrap" }}>
-              {data.actionText ? `${data.actionText} ` : ""}{eventType}
+              {eventType}
             </p>
           </div>
 
