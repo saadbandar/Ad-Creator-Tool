@@ -29,6 +29,15 @@ import {
 } from "@/components/FreeCardCanvas";
 
 /* ── Default data ── */
+/* ── University brand palette ── */
+const BRAND_SWATCHES = [
+  { hex: "#0e3020", label: "أخضر داكن"       },
+  { hex: "#3c7974", label: "أخضر مائي داكن" },
+  { hex: "#5ab8b0", label: "أخضر مائي"      },
+  { hex: "#bbe3e7", label: "أخضر مائي فاتح" },
+  { hex: "#ffffff", label: "أبيض"            },
+] as const;
+
 const DEFAULT_DATA: EventAdData = {
   bgImage: defaultBg,
   bgPositionX: 50,
@@ -704,9 +713,15 @@ export default function AdGenerator() {
                 onChange={v => setFree("headerText", v)} hint="مثال: دعوة / إعلان / نتائج" />
               <div className="flex items-center gap-3 pt-1">
                 <label className="text-xs text-muted-foreground font-medium shrink-0">اللون</label>
-                <input type="color" value={freeData.headerColor}
-                  onChange={e => setFree("headerColor", e.target.value)}
-                  className="w-8 h-8 rounded cursor-pointer border border-border" />
+                <div className="flex gap-1.5">
+                  {BRAND_SWATCHES.map(sw => (
+                    <button key={sw.hex} title={sw.label}
+                      onClick={() => setFree("headerColor", sw.hex)}
+                      style={{ backgroundColor: sw.hex, border: freeData.headerColor === sw.hex ? "3px solid #5ab8b0" : "2px solid #ccc" }}
+                      className="w-7 h-7 rounded-full transition-transform hover:scale-110 shrink-0"
+                    />
+                  ))}
+                </div>
                 <label className="text-xs text-muted-foreground font-medium shrink-0 mr-2">الحجم</label>
                 <input type="range" min={60} max={160} step={2}
                   value={freeData.headerSize}
@@ -746,9 +761,15 @@ export default function AdGenerator() {
                   {/* Color + size row */}
                   <div className="flex items-center gap-2 flex-wrap">
                     <label className="text-xs text-muted-foreground shrink-0">اللون</label>
-                    <input type="color" value={block.color}
-                      onChange={e => updateTextBlock(block.id, { color: e.target.value })}
-                      className="w-7 h-7 rounded cursor-pointer border border-border" />
+                    <div className="flex gap-1">
+                      {BRAND_SWATCHES.map(sw => (
+                        <button key={sw.hex} title={sw.label}
+                          onClick={() => updateTextBlock(block.id, { color: sw.hex })}
+                          style={{ backgroundColor: sw.hex, border: block.color === sw.hex ? "3px solid #5ab8b0" : "2px solid #ccc" }}
+                          className="w-6 h-6 rounded-full transition-transform hover:scale-110 shrink-0"
+                        />
+                      ))}
+                    </div>
                     <label className="text-xs text-muted-foreground shrink-0 mr-1">الحجم</label>
                     <input type="range" min={24} max={100} step={2}
                       value={block.fontSize}
