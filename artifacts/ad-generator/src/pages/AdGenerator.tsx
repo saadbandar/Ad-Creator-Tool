@@ -27,6 +27,10 @@ import {
   type FreeTextBlock,
   type FreeQrBlock,
 } from "@/components/FreeCardCanvas";
+import {
+  FREE_CANVAS_W_L, FREE_CANVAS_H_L,
+  FreeCardLandscape,
+} from "@/components/FreeCardLandscapeCanvas";
 
 /* ── Default data ── */
 /* ── University brand palette ── */
@@ -263,9 +267,11 @@ export default function AdGenerator() {
 
   /* ── Free card state ── */
   const [cardMode, setCardMode] = useState<"standard" | "free">("standard");
+  const [freeOrientation, setFreeOrientation] = useState<"portrait" | "landscape">("portrait");
   const [freeData, setFreeData] = useState<FreeCardData>({ ...DEFAULT_FREE_DATA });
   const [isExportingFree, setIsExportingFree] = useState(false);
   const freeExportRef = useRef<HTMLDivElement>(null);
+  const freeLandscapeExportRef = useRef<HTMLDivElement>(null);
   const freeBgInputId = useId();
 
   /* ── Google Translate (unofficial free endpoint) ── */
@@ -429,24 +435,28 @@ export default function AdGenerator() {
   }, []); // eslint-disable-line
 
   const exportFreeCard = useCallback(async () => {
-    const el = freeExportRef.current;
+    const isLand = freeOrientation === "landscape";
+    const el = isLand ? freeLandscapeExportRef.current : freeExportRef.current;
     if (!el) return;
     setIsExportingFree(true);
     const fmt = FORMAT_OPTIONS.find(f => f.id === exportFormat)!;
+    const cW = isLand ? FREE_CANVAS_W_L : FREE_CANVAS_W;
+    const cH = isLand ? FREE_CANVAS_H_L : FREE_CANVAS_H;
     try {
       await new Promise(r => setTimeout(r, 300));
       const canvas = await toCanvas(el, {
         pixelRatio: 1,
-        width: FREE_CANVAS_W,
-        height: FREE_CANVAS_H,
+        width: cW, height: cH,
         cacheBust: true,
         backgroundColor: "#ffffff",
       });
       const title = freeData.textBlocks[0]?.text || freeData.headerText || "بطاقة-حرة";
       if (fmt.id === "pdf") {
-        const pdf = new jsPDF({ orientation: "portrait", unit: "px",
-          format: [FREE_CANVAS_W, FREE_CANVAS_H], hotfixes: ["px_scaling"] });
-        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, FREE_CANVAS_W, FREE_CANVAS_H);
+        const pdf = new jsPDF({
+          orientation: isLand ? "landscape" : "portrait",
+          unit: "px", format: [cW, cH], hotfixes: ["px_scaling"],
+        });
+        pdf.addImage(canvas.toDataURL("image/jpeg", 0.95), "JPEG", 0, 0, cW, cH);
         pdf.save(`${toFilename(title, "بطاقة-حرة")}.pdf`);
       } else {
         const link = document.createElement("a");
@@ -456,7 +466,7 @@ export default function AdGenerator() {
       }
     } catch (err) { console.error(err); }
     finally { setIsExportingFree(false); }
-  }, [exportFormat, freeData]);
+  }, [exportFormat, freeData, freeOrientation]);
 
   const activeW = orientation === "portrait" ? CANVAS_W   : CANVAS_W_L;
   const activeH = orientation === "portrait" ? CANVAS_H   : CANVAS_H_L;
@@ -573,7 +583,7 @@ export default function AdGenerator() {
         </div>
       </div>
 
-      {/* Free card export canvas */}
+      {/* Free card export canvas — portrait */}
       <div style={{
         position: "fixed", top: 0, left: 0,
         width: 0, height: 0, overflow: "hidden",
@@ -581,6 +591,17 @@ export default function AdGenerator() {
       }}>
         <div ref={freeExportRef} style={{ width: FREE_CANVAS_W, height: FREE_CANVAS_H }}>
           <FreeCard data={freeData} />
+        </div>
+      </div>
+
+      {/* Free card export canvas — landscape */}
+      <div style={{
+        position: "fixed", top: 0, left: 0,
+        width: 0, height: 0, overflow: "hidden",
+        zIndex: -1, pointerEvents: "none",
+      }}>
+        <div ref={freeLandscapeExportRef} style={{ width: FREE_CANVAS_W_L, height: FREE_CANVAS_H_L }}>
+          <FreeCardLandscape data={freeData} />
         </div>
       </div>
 
@@ -1090,20 +1111,19 @@ export default function AdGenerator() {
               <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                 <Eye className="h-3.5 w-3.5" />
                 {cardMode === "free"
-                  ? "1080 × 1920 بكسل"
-                  : orientation === "portrait" ? "1080 × 1920" : "1920 × 1080"} بكسل
+                  ? (freeOrientation === "landscape" ? "1920 × 1080" : "1080 × 1920")
+                  : (orientation === "portrait" ? "1080 × 1920" : "1920 × 1080")} بكسل
               </div>
             </div>
 
-            {/* Orientation toggle — standard cards only */}
-            {cardMode === "standard" && (
+            {/* Orientation toggle — all card types */}
             <div className="flex gap-2 mb-3">
               {(["portrait", "landscape"] as const).map(o => (
                 <button
                   key={o}
-                  onClick={() => setOrientation(o)}
+                  onClick={() => cardMode === "free" ? setFreeOrientation(o) : setOrientation(o)}
                   className={`flex-1 py-2 rounded-lg border-2 text-xs font-medium transition-all flex items-center justify-center gap-1.5 ${
-                    orientation === o
+                    (cardMode === "free" ? freeOrientation : orientation) === o
                       ? "border-primary bg-primary/10 text-primary"
                       : "border-border hover:border-primary/40"
                   }`}
@@ -1115,43 +1135,27 @@ export default function AdGenerator() {
                 </button>
               ))}
             </div>
-            )}
 
             {/* Canvas wrapper */}
-            <div
-              ref={wrapperRef}
-              className="w-full bg-muted/30 rounded-lg mx-auto"
-              style={{
-                aspectRatio: cardMode === "free" ? "9/16"
-                  : orientation === "portrait" ? "9/16" : "16/9",
-                position: "relative", overflow: "hidden",
-                maxWidth: (cardMode === "free" || orientation === "portrait") ? 420 : "100%",
-              }}
-            >
-              <div style={{
-                position: "absolute", top: 0, left: 0,
-                transform: `scale(${cardMode === "free"
-                  ? (wrapperRef.current?.getBoundingClientRect().width ?? 400) / FREE_CANVAS_W
-                  : scale})`,
-                transformOrigin: "top left",
-                width:  cardMode === "free" ? FREE_CANVAS_W : activeW,
-                height: cardMode === "free" ? FREE_CANVAS_H : activeH,
-                pointerEvents: "none",
-              }}>
-                {cardMode === "free"
-                  ? <FreeCard data={freeData} />
-                  : orientation === "portrait"
-                    ? <EventAdCanvas data={data} />
-                    : <EventAdLandscapeCanvas data={data} />
-                }
-              </div>
-            </div>
+            <PreviewCanvas
+              cardMode={cardMode}
+              freeOrientation={freeOrientation}
+              orientation={orientation}
+              wrapperRef={wrapperRef}
+              scale={scale}
+              freeData={freeData}
+              data={data}
+              activeW={activeW}
+              activeH={activeH}
+            />
           </div>
 
           <div className="bg-accent/20 border border-accent-border rounded-lg px-4 py-2.5">
             <p className="text-xs text-foreground/70">
               {cardMode === "free"
-                ? <><strong>بطاقة حرة:</strong> 1080×1920 بكسل — محتوى كامل التخصيص بهوية الجامعة.</>
+                ? freeOrientation === "landscape"
+                  ? <><strong>أفقي حر:</strong> 1920×1080 بكسل — مناسب للشاشات والعروض التقديمية.</>
+                  : <><strong>عمودي حر:</strong> 1080×1920 بكسل — مناسب لقصص سناب شات وإنستغرام.</>
                 : orientation === "portrait"
                   ? <><strong>عمودي:</strong> 1080×1920 بكسل — مناسب لقصص سناب شات وإنستغرام.</>
                   : <><strong>أفقي:</strong> 1920×1080 بكسل — مناسب للشاشات والعروض التقديمية.</>
@@ -1160,6 +1164,58 @@ export default function AdGenerator() {
           </div>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+/* ── Preview canvas — isolated to avoid IIFE in JSX ── */
+function PreviewCanvas({
+  cardMode, freeOrientation, orientation, wrapperRef, scale,
+  freeData, data, activeW, activeH,
+}: {
+  cardMode: "standard" | "free";
+  freeOrientation: "portrait" | "landscape";
+  orientation: "portrait" | "landscape";
+  wrapperRef: React.RefObject<HTMLDivElement | null>;
+  scale: number;
+  freeData: FreeCardData;
+  data: EventAdData;
+  activeW: number;
+  activeH: number;
+}) {
+  const isFreeLand = cardMode === "free" && freeOrientation === "landscape";
+  const isPortrait = cardMode === "free" ? freeOrientation === "portrait" : orientation === "portrait";
+  const cW = cardMode === "free" ? (isFreeLand ? FREE_CANVAS_W_L : FREE_CANVAS_W) : activeW;
+  const cH = cardMode === "free" ? (isFreeLand ? FREE_CANVAS_H_L : FREE_CANVAS_H) : activeH;
+  const wrapperW = wrapperRef.current?.getBoundingClientRect().width ?? 400;
+  const previewScale = cardMode === "free" ? wrapperW / cW : scale;
+
+  return (
+    <div
+      ref={wrapperRef}
+      className="w-full bg-muted/30 rounded-lg mx-auto"
+      style={{
+        aspectRatio: isPortrait ? "9/16" : "16/9",
+        position: "relative", overflow: "hidden",
+        maxWidth: isPortrait ? 420 : "100%",
+      }}
+    >
+      <div style={{
+        position: "absolute", top: 0, left: 0,
+        transform: `scale(${previewScale})`,
+        transformOrigin: "top left",
+        width: cW, height: cH,
+        pointerEvents: "none",
+      }}>
+        {cardMode === "free"
+          ? (freeOrientation === "landscape"
+              ? <FreeCardLandscape data={freeData} />
+              : <FreeCard data={freeData} />)
+          : orientation === "portrait"
+            ? <EventAdCanvas data={data} />
+            : <EventAdLandscapeCanvas data={data} />
+        }
       </div>
     </div>
   );
