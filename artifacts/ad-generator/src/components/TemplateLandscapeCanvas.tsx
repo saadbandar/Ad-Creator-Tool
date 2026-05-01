@@ -223,6 +223,18 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
             }}>
               {eventTitle}
             </p>
+            {data.presenter && (
+              <p style={{
+                color: DARK_TEAL,
+                fontSize: 38,
+                fontWeight: 600,
+                lineHeight: 1.5,
+                margin: "14px 0 0",
+                whiteSpace: "pre-wrap",
+              }}>
+                من تقديم: {data.presenter}
+              </p>
+            )}
           </div>
 
           {/* Info card */}

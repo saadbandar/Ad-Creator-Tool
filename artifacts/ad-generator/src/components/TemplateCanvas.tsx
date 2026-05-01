@@ -40,6 +40,7 @@ export interface EventAdData {
   qrCodeImage?: string;
   adMode: "invitation" | "announcement";
   language?: "ar" | "en";
+  presenter?: string;
 }
 
 const TEAL       = "#5ab8b0";
@@ -278,6 +279,18 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
             }}>
               {eventTitle}
             </p>
+            {data.presenter && (
+              <p style={{
+                color: DARK_TEAL,
+                fontSize: 46,
+                fontWeight: 600,
+                lineHeight: 1.5,
+                margin: "18px 0 0",
+                whiteSpace: "pre-wrap",
+              }}>
+                من تقديم: {data.presenter}
+              </p>
+            )}
           </div>
 
           {/* ── INFO CARD ── */}

@@ -51,6 +51,7 @@ const DEFAULT_DATA: EventAdData = {
   representedBy: "",
   eventType: "",
   eventTitle: "",
+  presenter: "",
   time: "",
   day: "",
   date: "",
@@ -874,6 +875,9 @@ export default function AdGenerator() {
               hint="دورة تدريبية / ورشة عمل / محاضرة علمية" />
             <Field label="عنوان الفعالية" value={data.eventTitle}
               onChange={v => set("eventTitle", v)} multiline />
+            <Field label='من تقديم (اختياري)' value={data.presenter ?? ""}
+              onChange={v => set("presenter", v)}
+              hint="د. فلان / أ. فلانة …" />
           </Section>
 
           {/* Date & Time */}
