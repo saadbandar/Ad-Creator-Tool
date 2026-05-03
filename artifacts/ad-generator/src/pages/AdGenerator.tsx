@@ -404,13 +404,13 @@ export default function AdGenerator() {
     const d = new Date(raw + "T12:00:00");
     const dayName = new Intl.DateTimeFormat("ar-SA", { weekday: "long" }).format(d);
     if (mode === "hijri") {
-      const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
-        day: "numeric", month: "long", year: "numeric",
+      const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn", {
+        day: "numeric", month: "numeric", year: "numeric",
       }).format(d);
       setFree("dayDate", `${dayName}  ${dateStr}`);
     } else {
-      const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
-        day: "numeric", month: "long", year: "numeric",
+      const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-gregory-nu-latn", {
+        day: "numeric", month: "numeric", year: "numeric",
       }).format(d);
       setFree("dayDate", `${dayName}  ${dateStr}`);
     }
@@ -555,8 +555,8 @@ export default function AdGenerator() {
     if (!raw) return;
     const d = new Date(raw + "T12:00:00"); // noon avoids timezone flips
     const dayName = new Intl.DateTimeFormat("ar-SA", { weekday: "long" }).format(d);
-    const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
-      day: "numeric", month: "long", year: "numeric",
+    const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura-nu-latn", {
+      day: "numeric", month: "numeric", year: "numeric",
     }).format(d);
     set("day",  dayName);
     set("date", dateStr);
