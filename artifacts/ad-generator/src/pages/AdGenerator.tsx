@@ -277,6 +277,9 @@ export default function AdGenerator() {
   const freeExportRef = useRef<HTMLDivElement>(null);
   const freeLandscapeExportRef = useRef<HTMLDivElement>(null);
   const freeBgInputId = useId();
+  const [freeRawTime, setFreeRawTime] = useState("");
+  const [freeRawDate, setFreeRawDate] = useState("");
+  const [freeDateMode, setFreeDateMode] = useState<"hijri" | "gregorian">("hijri");
 
   /* ── Google Translate (unofficial free endpoint) ── */
   const tr = useCallback(async (text: string): Promise<string> => {
@@ -383,6 +386,35 @@ export default function AdGenerator() {
   /* ── Free card helpers ── */
   const setFree = <K extends keyof FreeCardData>(key: K, value: FreeCardData[K]) =>
     setFreeData(prev => ({ ...prev, [key]: value }));
+
+  const handleFreeTimeChange = (raw: string) => {
+    setFreeRawTime(raw);
+    if (!raw) { setFree("time", ""); return; }
+    const [hStr, mStr] = raw.split(":");
+    const h = parseInt(hStr, 10);
+    const m = parseInt(mStr, 10);
+    const period = h >= 12 ? "م" : "ص";
+    const h12 = h % 12 || 12;
+    setFree("time", `${h12}:${m.toString().padStart(2, "0")} ${period}`);
+  };
+
+  const handleFreeDateChange = (raw: string, mode: "hijri" | "gregorian") => {
+    setFreeRawDate(raw);
+    if (!raw) { setFree("dayDate", ""); return; }
+    const d = new Date(raw + "T12:00:00");
+    const dayName = new Intl.DateTimeFormat("ar-SA", { weekday: "long" }).format(d);
+    if (mode === "hijri") {
+      const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-islamic-umalqura", {
+        day: "numeric", month: "long", year: "numeric",
+      }).format(d);
+      setFree("dayDate", `${dayName}  ${dateStr}`);
+    } else {
+      const dateStr = new Intl.DateTimeFormat("ar-SA", {
+        day: "numeric", month: "long", year: "numeric",
+      }).format(d);
+      setFree("dayDate", `${dayName}  ${dateStr}`);
+    }
+  };
 
   const handleFreeBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -843,10 +875,56 @@ export default function AdGenerator() {
 
             {/* Time / Date / Venue */}
             <Section title="الوقت والتاريخ والمكان (اختياري)">
-              <Field label="الساعة" value={freeData.time ?? ""}
-                onChange={v => setFree("time", v)} hint="10:00 ص" />
-              <Field label="اليوم والتاريخ" value={freeData.dayDate ?? ""}
-                onChange={v => setFree("dayDate", v)} hint="الإثنين 1446/10/5" />
+              {/* Time picker */}
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground font-medium">الساعة</p>
+                <input
+                  type="time"
+                  value={freeRawTime}
+                  onChange={e => handleFreeTimeChange(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  style={{ direction: "ltr", colorScheme: "light" }}
+                />
+                {freeData.time && (
+                  <p className="text-[11px] text-primary font-medium text-right">سيظهر: {freeData.time}</p>
+                )}
+              </div>
+
+              {/* Date picker + Hijri/Gregorian toggle */}
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <p className="text-xs text-muted-foreground font-medium">التاريخ</p>
+                  <div className="flex rounded-md overflow-hidden border border-input text-[11px]">
+                    {(["hijri", "gregorian"] as const).map(mode => (
+                      <button key={mode}
+                        onClick={() => {
+                          setFreeDateMode(mode);
+                          if (freeRawDate) handleFreeDateChange(freeRawDate, mode);
+                        }}
+                        className={`px-2 py-0.5 transition-colors ${
+                          freeDateMode === mode
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-background text-muted-foreground hover:bg-muted"
+                        }`}
+                      >
+                        {mode === "hijri" ? "هجري" : "ميلادي"}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <input
+                  type="date"
+                  value={freeRawDate}
+                  onChange={e => handleFreeDateChange(e.target.value, freeDateMode)}
+                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  style={{ direction: "ltr", colorScheme: "light" }}
+                />
+                {freeData.dayDate && (
+                  <p className="text-[11px] text-primary font-medium text-right">سيظهر: {freeData.dayDate}</p>
+                )}
+              </div>
+
+              {/* Venue */}
               <Field label="المكان" value={freeData.venue ?? ""}
                 onChange={v => setFree("venue", v)} hint="قاعة المؤتمرات — المبنى الرئيسي" />
             </Section>

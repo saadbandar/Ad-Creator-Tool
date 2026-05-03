@@ -198,33 +198,37 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
             </div>
           ))}
 
-          {/* ── Info rows (time / date / venue) ── */}
+          {/* ── Info row (time / date / venue) — horizontal ── */}
           {hasInfo && (
             <div style={{
               width: "100%",
               backgroundColor: "#eaf5f4",
               borderRadius: 18,
-              padding: "20px 28px",
+              padding: "16px 24px",
               display: "flex",
-              flexDirection: "column",
-              gap: 14,
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 24,
+              direction: "rtl",
+              alignItems: "center",
+              justifyContent: "center",
             }}>
               {time && (
-                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, direction: "rtl" }}>
-                  <img src={iconClock} alt="" crossOrigin="anonymous" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
-                  <span style={{ color: DEEP_GREEN, fontSize: 28, fontWeight: 700, lineHeight: 1.25 }}>{time}</span>
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <img src={iconClock} alt="" crossOrigin="anonymous" style={{ width: 32, height: 32, objectFit: "contain", flexShrink: 0 }} />
+                  <span style={{ color: DEEP_GREEN, fontSize: 26, fontWeight: 700, lineHeight: 1.25 }}>{time}</span>
                 </div>
               )}
               {dayDate && (
-                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, direction: "rtl" }}>
-                  <img src={iconCalendar} alt="" crossOrigin="anonymous" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
-                  <span style={{ color: DEEP_GREEN, fontSize: 28, fontWeight: 700, lineHeight: 1.25 }}>{dayDate}</span>
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <img src={iconCalendar} alt="" crossOrigin="anonymous" style={{ width: 32, height: 32, objectFit: "contain", flexShrink: 0 }} />
+                  <span style={{ color: DEEP_GREEN, fontSize: 26, fontWeight: 700, lineHeight: 1.25 }}>{dayDate}</span>
                 </div>
               )}
               {venue && (
-                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, direction: "rtl" }}>
-                  <img src={iconLocation} alt="" crossOrigin="anonymous" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
-                  <span style={{ color: DEEP_GREEN, fontSize: 28, fontWeight: 700, lineHeight: 1.25 }}>{venue}</span>
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 10 }}>
+                  <img src={iconLocation} alt="" crossOrigin="anonymous" style={{ width: 32, height: 32, objectFit: "contain", flexShrink: 0 }} />
+                  <span style={{ color: DEEP_GREEN, fontSize: 26, fontWeight: 700, lineHeight: 1.25 }}>{venue}</span>
                 </div>
               )}
             </div>
