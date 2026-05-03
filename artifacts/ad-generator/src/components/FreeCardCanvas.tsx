@@ -273,16 +273,17 @@ export function FreeCard({ data }: { data: FreeCardData }) {
               marginTop: "auto",
               display: "flex",
               flexDirection: "row",
-              gap: 32,
+              gap: 72,
               justifyContent: "center",
               alignItems: "flex-start",
               flexWrap: "wrap",
-              paddingBottom: 8,
+              paddingTop: 16,
+              paddingBottom: 40,
             }}>
               {qrBlocks.map(qr => (
                 <div key={qr.id} style={{
                   display: "flex", flexDirection: "column",
-                  alignItems: "center", gap: 14,
+                  alignItems: "center", gap: 16,
                 }}>
                   {/* QR image box */}
                   <div style={{
@@ -314,8 +315,9 @@ export function FreeCard({ data }: { data: FreeCardData }) {
                       fontSize: 34,
                       fontWeight: 700,
                       textAlign: "center",
-                      maxWidth: QR_SIZE + 24,
-                      lineHeight: 1.35,
+                      maxWidth: QR_SIZE + 40,
+                      lineHeight: 1.4,
+                      display: "block",
                     }}>
                       {qr.label}
                     </span>

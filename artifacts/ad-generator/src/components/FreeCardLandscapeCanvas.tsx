@@ -241,15 +241,17 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
               marginTop: "auto",
               display: "flex",
               flexDirection: "row",
-              gap: 28,
+              gap: 60,
               justifyContent: "center",
-              alignItems: "flex-end",
+              alignItems: "flex-start",
               flexWrap: "wrap",
+              paddingTop: 12,
+              paddingBottom: 28,
             }}>
               {qrBlocks.map(qr => (
                 <div key={qr.id} style={{
                   display: "flex", flexDirection: "column",
-                  alignItems: "center", gap: 10,
+                  alignItems: "center", gap: 12,
                 }}>
                   <div style={{
                     width: QR_SIZE, height: QR_SIZE,
@@ -279,8 +281,9 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
                       fontSize: 26,
                       fontWeight: 700,
                       textAlign: "center",
-                      maxWidth: QR_SIZE + 20,
-                      lineHeight: 1.3,
+                      maxWidth: QR_SIZE + 32,
+                      lineHeight: 1.4,
+                      display: "block",
                     }}>
                       {qr.label}
                     </span>
