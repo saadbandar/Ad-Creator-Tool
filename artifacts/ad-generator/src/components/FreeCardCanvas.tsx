@@ -45,6 +45,7 @@ export interface FreeCardData {
   textBlocks: FreeTextBlock[];
   qrBlocks: FreeQrBlock[];
   time?: string;
+  timeTo?: string;
   dayDate?: string;
   venue?: string;
 }
@@ -55,8 +56,9 @@ export function FreeCard({ data }: { data: FreeCardData }) {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     headerText, headerColor, headerSize,
     textBlocks, qrBlocks,
-    time, dayDate, venue,
+    time, timeTo, dayDate, venue,
   } = data;
+  const timeDisplay = timeTo ? `${time} — ${timeTo}` : time;
   const hasInfo = !!(time || dayDate || venue);
 
   /* Pre-convert social bar to pure-white data URL (export-safe) */
@@ -247,7 +249,7 @@ export function FreeCard({ data }: { data: FreeCardData }) {
               {time && (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12, minWidth: 120 }}>
                   <img src={iconClock} alt="" crossOrigin="anonymous" style={{ width: 56, height: 56, objectFit: "contain" }} />
-                  <span style={{ color: DEEP_GREEN, fontSize: 34, fontWeight: 700, lineHeight: 1.3, textAlign: "center" }}>{time}</span>
+                  <span style={{ color: DEEP_GREEN, fontSize: 34, fontWeight: 700, lineHeight: 1.3, textAlign: "center" }}>{timeDisplay}</span>
                 </div>
               )}
               {dayDate && (

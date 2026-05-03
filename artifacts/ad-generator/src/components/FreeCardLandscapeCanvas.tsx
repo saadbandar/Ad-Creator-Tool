@@ -30,8 +30,9 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     headerText, headerColor, headerSize,
     textBlocks, qrBlocks,
-    time, dayDate, venue,
+    time, timeTo, dayDate, venue,
   } = data;
+  const timeDisplay = timeTo ? `${time} — ${timeTo}` : time;
   const hasInfo = !!(time || dayDate || venue);
 
   const [whiteSocial, setWhiteSocial] = useState(socialBar);
@@ -216,7 +217,7 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
               {time && (
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, minWidth: 90 }}>
                   <img src={iconClock} alt="" crossOrigin="anonymous" style={{ width: 38, height: 38, objectFit: "contain" }} />
-                  <span style={{ color: DEEP_GREEN, fontSize: 24, fontWeight: 700, lineHeight: 1.3, textAlign: "center" }}>{time}</span>
+                  <span style={{ color: DEEP_GREEN, fontSize: 24, fontWeight: 700, lineHeight: 1.3, textAlign: "center" }}>{timeDisplay}</span>
                 </div>
               )}
               {dayDate && (

@@ -260,6 +260,7 @@ export default function AdGenerator() {
   const enExportRef = useRef<HTMLDivElement>(null);
 
   const [rawTime, setRawTime] = useState("");
+  const [rawTimeTo, setRawTimeTo] = useState("");
   const [rawDate, setRawDate] = useState("");
   const [orientation, setOrientation] = useState<"portrait" | "landscape">("portrait");
   const [scale, setScale] = useState(0.35);
@@ -278,6 +279,7 @@ export default function AdGenerator() {
   const freeLandscapeExportRef = useRef<HTMLDivElement>(null);
   const freeBgInputId = useId();
   const [freeRawTime, setFreeRawTime] = useState("");
+  const [freeRawTimeTo, setFreeRawTimeTo] = useState("");
   const [freeRawDate, setFreeRawDate] = useState("");
   const [freeDateMode, setFreeDateMode] = useState<"hijri" | "gregorian">("hijri");
 
@@ -309,15 +311,12 @@ export default function AdGenerator() {
       ]);
 
       /* Re-format date/time in English */
-      let timeEn = data.time;
-      let dayEn  = data.day;
-      let dateEn = data.date;
-      if (rawTime) {
-        const [hStr, mStr] = rawTime.split(":");
-        const h = parseInt(hStr, 10);
-        const m = parseInt(mStr, 10);
-        timeEn = `${h % 12 || 12}:${m.toString().padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
-      }
+      let timeEn   = data.time;
+      let timeToEn = data.timeTo;
+      let dayEn    = data.day;
+      let dateEn   = data.date;
+      if (rawTime)   timeEn   = formatEn12(rawTime);
+      if (rawTimeTo) timeToEn = formatEn12(rawTimeTo);
       if (rawDate) {
         const d = new Date(rawDate + "T12:00:00");
         dayEn  = new Intl.DateTimeFormat("en-US", { weekday: "long" }).format(d);
@@ -330,7 +329,7 @@ export default function AdGenerator() {
         eventType:  typeTr,
         eventTitle: titleTr,
         venue:      venueTr,
-        time: timeEn, day: dayEn, date: dateEn,
+        time: timeEn, timeTo: timeToEn, day: dayEn, date: dateEn,
         language: "en",
       };
       setEnData(translated);
@@ -387,15 +386,24 @@ export default function AdGenerator() {
   const setFree = <K extends keyof FreeCardData>(key: K, value: FreeCardData[K]) =>
     setFreeData(prev => ({ ...prev, [key]: value }));
 
-  const handleFreeTimeChange = (raw: string) => {
-    setFreeRawTime(raw);
-    if (!raw) { setFree("time", ""); return; }
+  const formatAr12 = (raw: string) => {
+    if (!raw) return "";
     const [hStr, mStr] = raw.split(":");
     const h = parseInt(hStr, 10);
     const m = parseInt(mStr, 10);
     const period = h >= 12 ? "م" : "ص";
     const h12 = h % 12 || 12;
-    setFree("time", `${h12}:${m.toString().padStart(2, "0")} ${period}`);
+    return `${h12}:${m.toString().padStart(2, "0")} ${period}`;
+  };
+
+  const handleFreeTimeChange = (raw: string) => {
+    setFreeRawTime(raw);
+    setFree("time", formatAr12(raw));
+  };
+
+  const handleFreeTimeToChange = (raw: string) => {
+    setFreeRawTimeTo(raw);
+    setFree("timeTo", raw ? formatAr12(raw) : undefined);
   };
 
   const handleFreeDateChange = (raw: string, mode: "hijri" | "gregorian") => {
@@ -537,16 +545,22 @@ export default function AdGenerator() {
   };
 
   /* ── Time picker: "HH:MM" → "٩:٣٠ ص" ── */
-  const handleTimeChange = (raw: string) => {
-    setRawTime(raw);
-    if (!raw) return;
+  const formatEn12 = (raw: string) => {
+    if (!raw) return "";
     const [hStr, mStr] = raw.split(":");
     const h = parseInt(hStr, 10);
     const m = parseInt(mStr, 10);
-    const period = h >= 12 ? "م" : "ص";
-    const h12 = h % 12 || 12;
-    const formatted = `${h12}:${m.toString().padStart(2, "0")} ${period}`;
-    set("time", formatted);
+    return `${h % 12 || 12}:${m.toString().padStart(2, "0")} ${h >= 12 ? "PM" : "AM"}`;
+  };
+
+  const handleTimeChange = (raw: string) => {
+    setRawTime(raw);
+    set("time", formatEn12(raw).replace("PM", "م").replace("AM", "ص"));
+  };
+
+  const handleTimeToChange = (raw: string) => {
+    setRawTimeTo(raw);
+    set("timeTo", raw ? formatEn12(raw).replace("PM", "م").replace("AM", "ص") : undefined);
   };
 
   /* ── Date picker: "YYYY-MM-DD" → day name + Hijri formatted date ── */
@@ -672,8 +686,8 @@ export default function AdGenerator() {
         {/* ── Controls ── */}
         <div className="space-y-4">
 
-          {/* Background image */}
-          <Section title="صورة الخلفية">
+          {/* Background image — standard card only */}
+          {cardMode === "standard" && <Section title="صورة الخلفية">
             <label htmlFor={bgInputId} data-testid="label-upload"
               className="flex flex-col items-center gap-2 border-2 border-dashed border-primary/40 rounded-lg p-4 cursor-pointer hover:border-primary/70 hover:bg-primary/5 transition-all">
               <ImageIcon className="h-6 w-6 text-primary/60" />
@@ -705,7 +719,7 @@ export default function AdGenerator() {
                 </button>
               </div>
             )}
-          </Section>
+          </Section>}
 
           {/* Card type selector */}
           <Section title="نوع البطاقة">
@@ -875,18 +889,35 @@ export default function AdGenerator() {
 
             {/* Time / Date / Venue */}
             <Section title="الوقت والتاريخ والمكان (اختياري)">
-              {/* Time picker */}
+              {/* Time range pickers */}
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium">الساعة</p>
-                <input
-                  type="time"
-                  value={freeRawTime}
-                  onChange={e => handleFreeTimeChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                  style={{ direction: "ltr", colorScheme: "light" }}
-                />
+                <p className="text-xs text-muted-foreground font-medium">الوقت</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] text-muted-foreground">من</p>
+                    <input
+                      type="time"
+                      value={freeRawTime}
+                      onChange={e => handleFreeTimeChange(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                      style={{ direction: "ltr", colorScheme: "light" }}
+                    />
+                  </div>
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] text-muted-foreground">إلى</p>
+                    <input
+                      type="time"
+                      value={freeRawTimeTo}
+                      onChange={e => handleFreeTimeToChange(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                      style={{ direction: "ltr", colorScheme: "light" }}
+                    />
+                  </div>
+                </div>
                 {freeData.time && (
-                  <p className="text-[11px] text-primary font-medium text-right">سيظهر: {freeData.time}</p>
+                  <p className="text-[11px] text-primary font-medium text-right">
+                    سيظهر: {freeData.time}{freeData.timeTo ? ` — ${freeData.timeTo}` : ""}
+                  </p>
                 )}
               </div>
 
@@ -973,40 +1004,53 @@ export default function AdGenerator() {
 
           {/* Date & Time */}
           <Section title="التاريخ والوقت">
-            <div className="grid grid-cols-2 gap-2">
-              {/* ── Time picker ── */}
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium">الساعة</p>
-                <input
-                  type="time"
-                  value={rawTime}
-                  onChange={e => handleTimeChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs text-right focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                  style={{ direction: "ltr", colorScheme: "light" }}
-                />
-                {data.time && rawTime && (
-                  <p className="text-[11px] text-primary font-medium text-right">
-                    سيظهر: {data.time}
-                  </p>
-                )}
+            {/* ── Time range pickers ── */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground font-medium">الوقت</p>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="space-y-0.5">
+                  <p className="text-[11px] text-muted-foreground">من</p>
+                  <input
+                    type="time"
+                    value={rawTime}
+                    onChange={e => handleTimeChange(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                    style={{ direction: "ltr", colorScheme: "light" }}
+                  />
+                </div>
+                <div className="space-y-0.5">
+                  <p className="text-[11px] text-muted-foreground">إلى</p>
+                  <input
+                    type="time"
+                    value={rawTimeTo}
+                    onChange={e => handleTimeToChange(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                    style={{ direction: "ltr", colorScheme: "light" }}
+                  />
+                </div>
               </div>
+              {data.time && rawTime && (
+                <p className="text-[11px] text-primary font-medium text-right">
+                  سيظهر: {data.time}{data.timeTo ? ` — ${data.timeTo}` : ""}
+                </p>
+              )}
+            </div>
 
-              {/* ── Date picker ── */}
-              <div className="space-y-1">
-                <p className="text-xs text-muted-foreground font-medium">التاريخ</p>
-                <input
-                  type="date"
-                  value={rawDate}
-                  onChange={e => handleDateChange(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                  style={{ direction: "ltr", colorScheme: "light" }}
-                />
-                {data.date && rawDate && (
-                  <p className="text-[11px] text-primary font-medium text-right">
-                    {data.day} — {data.date}
-                  </p>
-                )}
-              </div>
+            {/* ── Date picker ── */}
+            <div className="space-y-1">
+              <p className="text-xs text-muted-foreground font-medium">التاريخ</p>
+              <input
+                type="date"
+                value={rawDate}
+                onChange={e => handleDateChange(e.target.value)}
+                className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                style={{ direction: "ltr", colorScheme: "light" }}
+              />
+              {data.date && rawDate && (
+                <p className="text-[11px] text-primary font-medium text-right">
+                  {data.day} — {data.date}
+                </p>
+              )}
             </div>
           </Section>
 

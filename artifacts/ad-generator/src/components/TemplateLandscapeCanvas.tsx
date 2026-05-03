@@ -32,11 +32,12 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
   const {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     representedBy, eventType, eventTitle,
-    time, day, date,
+    time, timeTo, day, date,
     locationType, venue, meetingUrl,
     hasCertificate, qrCodeImage, adMode,
     language,
   } = data;
+  const timeDisplay = timeTo ? `${time} — ${timeTo}` : time;
 
   const isEn           = language === "en";
   const isAnnouncement = adMode === "announcement";
@@ -274,7 +275,7 @@ export function EventAdLandscapeCanvas({ data }: { data: EventAdData }) {
 
             {/* Info rows */}
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 18, direction: isEn ? "ltr" : "rtl" }}>
-              <LInfoRow icon={iconClock}    text={time} isEn={isEn} />
+              <LInfoRow icon={iconClock}    text={timeDisplay} isEn={isEn} />
               <LInfoRow icon={iconCalendar} text={`${day}  ${date}`} isEn={isEn} />
               {isOnline ? (
                 <LInfoRow icon={iconLocation} text={L.online} subText={platformName} subLogo={platformLogo} urlText={meetingUrl || undefined} isEn={isEn} />

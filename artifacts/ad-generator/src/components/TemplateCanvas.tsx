@@ -31,6 +31,7 @@ export interface EventAdData {
   eventType: string;
   eventTitle: string;
   time: string;
+  timeTo?: string;
   day: string;
   date: string;
   locationType: LocationType;
@@ -66,11 +67,12 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
   const {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     departmentName, representedBy, eventType, eventTitle,
-    time, day, date,
+    time, timeTo, day, date,
     locationType, venue, meetingUrl,
     hasCertificate, qrCodeImage, adMode,
     language,
   } = data;
+  const timeDisplay = timeTo ? `${time} — ${timeTo}` : time;
 
   const isEn           = language === "en";
   const isAnnouncement = adMode === "announcement";
@@ -344,7 +346,7 @@ export function EventAdCanvas({ data }: { data: EventAdData }) {
               gap: 22,
               direction: isEn ? "ltr" : "rtl",
             }}>
-              <InfoRow icon={iconClock}    text={time} isEn={isEn} />
+              <InfoRow icon={iconClock}    text={timeDisplay} isEn={isEn} />
               <InfoRow icon={iconCalendar} text={`${day}  ${date}`} isEn={isEn} />
               {isOnline ? (
                 <InfoRow
