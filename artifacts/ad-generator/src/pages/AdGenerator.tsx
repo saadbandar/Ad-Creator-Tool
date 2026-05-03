@@ -71,6 +71,9 @@ const DEFAULT_FREE_DATA: FreeCardData = {
   headerSize: 110,
   textBlocks: [],
   qrBlocks: [],
+  time: "",
+  dayDate: "",
+  venue: "",
 };
 
 /* ── Sanitise a title string into a safe filename (no extension) ── */
@@ -836,6 +839,16 @@ export default function AdGenerator() {
                 <Plus className="h-4 w-4" />
                 إضافة نص
               </button>
+            </Section>
+
+            {/* Time / Date / Venue */}
+            <Section title="الوقت والتاريخ والمكان (اختياري)">
+              <Field label="الساعة" value={freeData.time ?? ""}
+                onChange={v => setFree("time", v)} hint="10:00 ص" />
+              <Field label="اليوم والتاريخ" value={freeData.dayDate ?? ""}
+                onChange={v => setFree("dayDate", v)} hint="الإثنين 1446/10/5" />
+              <Field label="المكان" value={freeData.venue ?? ""}
+                onChange={v => setFree("venue", v)} hint="قاعة المؤتمرات — المبنى الرئيسي" />
             </Section>
 
             {/* QR codes */}

@@ -7,6 +7,9 @@ import patternImg         from "@assets/image2.png";
 import patternTransparent from "@assets/pattern_transparent.png";
 import socialBar          from "@assets/image3.png";
 import logoUnivWhite      from "@assets/logo_white.png";
+import iconClock    from "@assets/image6.png";
+import iconCalendar from "@assets/image7.png";
+import iconLocation from "@assets/image8.png";
 import type { FreeCardData } from "./FreeCardCanvas";
 
 export const FREE_CANVAS_W_L = 1920;
@@ -27,7 +30,9 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
     bgImage, bgPositionX, bgPositionY, bgZoom,
     headerText, headerColor, headerSize,
     textBlocks, qrBlocks,
+    time, dayDate, venue,
   } = data;
+  const hasInfo = !!(time || dayDate || venue);
 
   const [whiteSocial, setWhiteSocial] = useState(socialBar);
   useEffect(() => {
@@ -192,6 +197,38 @@ export function FreeCardLandscape({ data }: { data: FreeCardData }) {
               </p>
             </div>
           ))}
+
+          {/* ── Info rows (time / date / venue) ── */}
+          {hasInfo && (
+            <div style={{
+              width: "100%",
+              backgroundColor: "#eaf5f4",
+              borderRadius: 18,
+              padding: "20px 28px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 14,
+            }}>
+              {time && (
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, direction: "rtl" }}>
+                  <img src={iconClock} alt="" crossOrigin="anonymous" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+                  <span style={{ color: DEEP_GREEN, fontSize: 28, fontWeight: 700, lineHeight: 1.25 }}>{time}</span>
+                </div>
+              )}
+              {dayDate && (
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, direction: "rtl" }}>
+                  <img src={iconCalendar} alt="" crossOrigin="anonymous" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+                  <span style={{ color: DEEP_GREEN, fontSize: 28, fontWeight: 700, lineHeight: 1.25 }}>{dayDate}</span>
+                </div>
+              )}
+              {venue && (
+                <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: 12, direction: "rtl" }}>
+                  <img src={iconLocation} alt="" crossOrigin="anonymous" style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }} />
+                  <span style={{ color: DEEP_GREEN, fontSize: 28, fontWeight: 700, lineHeight: 1.25 }}>{venue}</span>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── QR codes row ── */}
           {HAS_QR && (
