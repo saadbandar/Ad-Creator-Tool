@@ -409,7 +409,7 @@ export default function AdGenerator() {
       }).format(d);
       setFree("dayDate", `${dayName}  ${dateStr}`);
     } else {
-      const dateStr = new Intl.DateTimeFormat("ar-SA", {
+      const dateStr = new Intl.DateTimeFormat("ar-SA-u-ca-gregory", {
         day: "numeric", month: "long", year: "numeric",
       }).format(d);
       setFree("dayDate", `${dayName}  ${dateStr}`);
