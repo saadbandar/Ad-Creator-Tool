@@ -891,8 +891,18 @@ export default function AdGenerator() {
 
             {/* Time / Date / Venue */}
             <Section title="الوقت والتاريخ والمكان (اختياري)">
-              {/* Time toggle + pickers */}
+              {/* Time picker + optional range */}
               <div className="space-y-2">
+                <div className="space-y-0.5">
+                  <p className="text-xs text-muted-foreground font-medium">الساعة</p>
+                  <input
+                    type="time"
+                    value={freeRawTime}
+                    onChange={e => handleFreeTimeChange(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                    style={{ direction: "ltr", colorScheme: "light" }}
+                  />
+                </div>
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input
                     type="checkbox"
@@ -900,44 +910,30 @@ export default function AdGenerator() {
                     onChange={e => {
                       setFreeHasTime(e.target.checked);
                       if (!e.target.checked) {
-                        setFreeRawTime(""); setFreeRawTimeTo("");
-                        setFree("time", undefined); setFree("timeTo", undefined);
+                        setFreeRawTimeTo("");
+                        setFree("timeTo", undefined);
                       }
                     }}
                     className="w-4 h-4 accent-primary"
                   />
-                  <span className="text-xs font-medium text-foreground">محدد بوقت</span>
+                  <span className="text-xs text-muted-foreground">محدد بوقت (من … إلى …)</span>
                 </label>
                 {freeHasTime && (
-                  <div className="space-y-1">
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="space-y-0.5">
-                        <p className="text-[11px] text-muted-foreground">من الساعة</p>
-                        <input
-                          type="time"
-                          value={freeRawTime}
-                          onChange={e => handleFreeTimeChange(e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                          style={{ direction: "ltr", colorScheme: "light" }}
-                        />
-                      </div>
-                      <div className="space-y-0.5">
-                        <p className="text-[11px] text-muted-foreground">إلى الساعة</p>
-                        <input
-                          type="time"
-                          value={freeRawTimeTo}
-                          onChange={e => handleFreeTimeToChange(e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                          style={{ direction: "ltr", colorScheme: "light" }}
-                        />
-                      </div>
-                    </div>
-                    {freeData.time && (
-                      <p className="text-[11px] text-primary font-medium text-right">
-                        سيظهر: {freeData.time}{freeData.timeTo ? ` — ${freeData.timeTo}` : ""}
-                      </p>
-                    )}
+                  <div className="space-y-0.5">
+                    <p className="text-[11px] text-muted-foreground">إلى الساعة</p>
+                    <input
+                      type="time"
+                      value={freeRawTimeTo}
+                      onChange={e => handleFreeTimeToChange(e.target.value)}
+                      className="w-full rounded-md border border-input bg-background px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                      style={{ direction: "ltr", colorScheme: "light" }}
+                    />
                   </div>
+                )}
+                {freeData.time && (
+                  <p className="text-[11px] text-primary font-medium text-right">
+                    سيظهر: {freeData.time}{freeData.timeTo ? ` — ${freeData.timeTo}` : ""}
+                  </p>
                 )}
               </div>
 
@@ -1024,8 +1020,18 @@ export default function AdGenerator() {
 
           {/* Date & Time */}
           <Section title="التاريخ والوقت">
-            {/* ── Time toggle + pickers ── */}
+            {/* ── Time picker + optional range ── */}
             <div className="space-y-2">
+              <div className="space-y-0.5">
+                <p className="text-xs text-muted-foreground font-medium">الساعة</p>
+                <input
+                  type="time"
+                  value={rawTime}
+                  onChange={e => handleTimeChange(e.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                  style={{ direction: "ltr", colorScheme: "light" }}
+                />
+              </div>
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
@@ -1033,44 +1039,30 @@ export default function AdGenerator() {
                   onChange={e => {
                     setHasTime(e.target.checked);
                     if (!e.target.checked) {
-                      setRawTime(""); setRawTimeTo("");
-                      set("time", ""); set("timeTo", undefined);
+                      setRawTimeTo("");
+                      set("timeTo", undefined);
                     }
                   }}
                   className="w-4 h-4 accent-primary"
                 />
-                <span className="text-xs font-medium text-foreground">محدد بوقت</span>
+                <span className="text-xs text-muted-foreground">محدد بوقت (من … إلى …)</span>
               </label>
               {hasTime && (
-                <div className="space-y-1">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="space-y-0.5">
-                      <p className="text-[11px] text-muted-foreground">من الساعة</p>
-                      <input
-                        type="time"
-                        value={rawTime}
-                        onChange={e => handleTimeChange(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                        style={{ direction: "ltr", colorScheme: "light" }}
-                      />
-                    </div>
-                    <div className="space-y-0.5">
-                      <p className="text-[11px] text-muted-foreground">إلى الساعة</p>
-                      <input
-                        type="time"
-                        value={rawTimeTo}
-                        onChange={e => handleTimeToChange(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
-                        style={{ direction: "ltr", colorScheme: "light" }}
-                      />
-                    </div>
-                  </div>
-                  {data.time && (
-                    <p className="text-[11px] text-primary font-medium text-right">
-                      سيظهر: {data.time}{data.timeTo ? ` — ${data.timeTo}` : ""}
-                    </p>
-                  )}
+                <div className="space-y-0.5">
+                  <p className="text-[11px] text-muted-foreground">إلى الساعة</p>
+                  <input
+                    type="time"
+                    value={rawTimeTo}
+                    onChange={e => handleTimeToChange(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-1 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors"
+                    style={{ direction: "ltr", colorScheme: "light" }}
+                  />
                 </div>
+              )}
+              {data.time && (
+                <p className="text-[11px] text-primary font-medium text-right">
+                  سيظهر: {data.time}{data.timeTo ? ` — ${data.timeTo}` : ""}
+                </p>
               )}
             </div>
 
