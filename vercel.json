@@ -1,0 +1,6 @@
+{
+  "buildCommand": "pnpm --filter @workspace/ad-generator build",
+  "outputDirectory": "artifacts/ad-generator/dist/public",
+  "installCommand": "pnpm install",
+  "framework": null
+}
